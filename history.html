@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>History · Court Atlas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;800&family=Public+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<link rel="stylesheet" href="styles.css">
+<script src="data.js"></script>
+<script src="common.js"></script>
+</head>
+<body>
+<header class="top"><div class="wrap">
+  <a class="brand" href="index.html"><b>Court Atlas</b><span>2026 season</span></a>
+  <nav id="nav"><a href="season.html">Season Map</a><a href="history.html" class="on" aria-current="page">History</a><a href="archive.html">Past Champions</a><a href="rackets.html">Rackets</a><a href="strings.html">Strings</a><a href="players.html">Players</a><a href="stats.html">Statistics</a></nav>
+</div></header>
+<main class="wrap page">
+<p class="crumb"><a href="index.html">Home</a><span aria-hidden="true">/</span><span>History</span></p>
+<div class="page-head">
+  <p class="eyebrow">1874 – 2026</p>
+  <h1>History</h1>
+  <p>From a garden-party game on English lawns to electronic line calling, these are the moments that shaped modern tennis.</p>
+</div>
+
+<section>
+  <div class="hist">
+    <ol class="tl" id="timeline"></ol>
+    <div style="display:flex;flex-direction:column;gap:16px">
+      <div class="panel rec">
+        <h3>Most Grand Slam singles titles</h3>
+        <div class="tablebox"><table id="recTable"></table></div>
+        <a class="slamlink" href="archive.html">Every Grand Slam champion since 2000 →</a>
+      </div>
+      <div class="panel rec">
+        <h3>The four majors</h3>
+        <div class="slam4" id="slam4"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+$('#timeline').innerHTML = HISTORY.map(h => `<li class="${h.big ? 'big' : ''}"><div class="yr">${h.y}</div><h3>${h.t}</h3><p>${h.d}</p></li>`).join('');
+$('#recTable').innerHTML = `<thead><tr><th></th><th>Player</th><th>Country</th><th class="n">Titles</th></tr></thead><tbody>${RECORDS.map(r => `<tr><td class="ex">${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td><td class="n">${r[3]}</td></tr>`).join('')}</tbody>`;
+$('#slam4').innerHTML = SLAMS.map(s => `<div><b><i class="dot ${s.sf}"></i>${s.n}</b><span class="ex">${s.d}</span></div>`).join('');
+</script>
+
+<nav class="nextprev" aria-label="More topics">
+  <a href="season.html"><small>← Previous</small><b>Season Map</b></a>
+  <a class="next" href="archive.html"><small>Next →</small><b>Past Champions</b></a>
+</nav>
+</main>
+<div class="wrap"><footer><p>Data: Wikipedia’s 2026 ATP Tour, WTA Tour, ATP Masters 1000 and WTA 1000 pages and the ATP/WTA rankings of September 28, 2026, compiled on October 5, 2026. Some ATP 250 and 500 dates are by tournament week, and events from October on may change. Finals without a confirmed score are marked “Score not recorded”. Racket specs are manufacturer figures.</p></footer></div>
+</body>
+</html>

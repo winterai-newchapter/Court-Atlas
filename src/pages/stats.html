@@ -1,0 +1,37 @@
+<div class="page-head">
+  <p class="eyebrow">Points, titles, majors</p>
+  <h1>Statistics</h1>
+  <p>Ranking points and 2026 title counts for the leading players on both tours. Hover a bar for details.</p>
+</div>
+
+<section>
+  <div class="seg ptabs" id="sSeg" role="group" aria-label="Tour">
+    <button id="s-all" aria-pressed="true" data-v="all">ATP &amp; WTA</button>
+    <button id="s-atp" aria-pressed="false" data-v="ATP">ATP men</button>
+    <button id="s-wta" aria-pressed="false" data-v="WTA">WTA women</button>
+  </div>
+  <div class="stats" id="statsGrid"></div>
+</section>
+
+<script>
+const TOURNAME = {ATP:'ATP men', WTA:'WTA women'};
+const panel = (id, title, cap, wide) => `<div class="panel chart"${wide ? ' style="grid-column:1/-1"' : ''}><h3>${title}</h3><p class="cap">${cap}</p><div class="hbars" id="${id}"></div></div>`;
+function render(v){
+  const tours = v === 'all' ? ['ATP','WTA'] : [v];
+  $('#statsGrid').innerHTML = tours.map(t =>
+      panel(`pts${t}`, `${t} ranking points`, `Top 10, rankings of Sept 28, 2026`)
+    + panel(`ttl${t}`, `${t} 2026 titles`, `Counted across tournaments covered on this site (Slams, 1000s, 500s and some 250s)`)).join('')
+    + panel('slamChart', `Career Grand Slam singles titles, current top 10${tours.length > 1 ? 's' : ''}`, `Through the 2026 US Open, ${tours.length > 1 ? 'ATP and WTA combined' : TOURNAME[v]} · <a href="archive.html">every champion since 2000 →</a>`, true);
+  tours.forEach(tour => {
+    hbars($(`#pts${tour}`), PLAYERS[tour].map(p => ({n:`${p.rk}. ${p.n}`, v:p.pts, tip:`${p.n} · ${p.co} · ${p.pts.toLocaleString('en-US')} pts`})), 12000, [0,3000,6000,9000,12000], '');
+    const c = {};
+    T.forEach(t => t.res.forEach(r => { if (r.t === tour){ (c[r.w] = c[r.w] || {n:r.w, v:0, ev:[]}); c[r.w].v++; c[r.w].ev.push(t.name); } }));
+    const rows = Object.values(c).sort((a,b) => b.v - a.v || a.n.localeCompare(b.n)).slice(0,10);
+    hbars($(`#ttl${tour}`), rows.map(r => ({n:r.n, v:r.v, tip:`${r.n} · ${r.ev.join(', ')}`})), 6, [0,2,4,6], '');
+  });
+  const slams = tours.flatMap(t => PLAYERS[t].map(p => ({...p, t}))).filter(p => p.gs > 0).sort((a,b) => b.gs - a.gs);
+  hbars($('#slamChart'), slams.map(p => ({n:tours.length > 1 ? `${p.n} (${p.t})` : p.n, v:p.gs, tip:`${p.n} · ${p.gs} major titles`})), 8, [0,2,4,6,8], '');
+}
+segInit('sSeg', render);
+render('all');
+</script>

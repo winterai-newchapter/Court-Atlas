@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Past Champions · Court Atlas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;800&family=Public+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<link rel="stylesheet" href="styles.css">
+<script src="data.js"></script>
+<script src="common.js"></script>
+</head>
+<body>
+<header class="top"><div class="wrap">
+  <a class="brand" href="index.html"><b>Court Atlas</b><span>2026 season</span></a>
+  <nav id="nav"><a href="season.html">Season Map</a><a href="history.html">History</a><a href="archive.html" class="on" aria-current="page">Past Champions</a><a href="rackets.html">Rackets</a><a href="strings.html">Strings</a><a href="players.html">Players</a><a href="stats.html">Statistics</a></nav>
+</div></header>
+<main class="wrap page">
+<p class="crumb"><a href="index.html">Home</a><span aria-hidden="true">/</span><span>Past Champions</span></p>
+<div class="page-head">
+  <p class="eyebrow">2000 – 2026</p>
+  <h1>Past Champions</h1>
+  <p>Every Grand Slam singles champion since 2000. Pick a name in the table or the leaderboard to light up all of that player’s titles.</p>
+</div>
+
+<section>
+  <div class="toolbar arch-bar">
+    <div class="seg" id="aTour" role="group" aria-label="Tour">
+      <button aria-pressed="true" data-v="all">ATP &amp; WTA</button>
+      <button aria-pressed="false" data-v="ATP">ATP men</button>
+      <button aria-pressed="false" data-v="WTA">WTA women</button>
+    </div>
+    <div class="seg" id="aEra" role="group" aria-label="Years">
+      <button aria-pressed="true" data-v="all">All years</button>
+      <button aria-pressed="false" data-v="2020">2020s</button>
+      <button aria-pressed="false" data-v="2010">2010s</button>
+      <button aria-pressed="false" data-v="2000">2000s</button>
+    </div>
+    <button type="button" class="clear" id="aClear" hidden>Clear highlight</button>
+  </div>
+  <div class="arch">
+    <div class="panel tablebox" style="padding:8px 14px">
+      <table class="champs" id="champs"></table>
+    </div>
+    <div class="panel chart">
+      <h3 id="lbTitle">Most majors</h3>
+      <p class="cap" id="lbCap"></p>
+      <div class="hbars lb" id="lb"></div>
+    </div>
+  </div>
+</section>
+
+<script>
+const SLAM_IDS = ['ao','rg','wim','uso'];
+// Merge the archive with this season's finished Slam finals from T
+const CH = {ATP:{...PAST_SLAMS.ATP}, WTA:{...PAST_SLAMS.WTA}};
+['ATP','WTA'].forEach(tour => {
+  const row = SLAM_IDS.map(id => { const r = T.find(t => t.id === id).res.find(x => x.t === tour); return r ? r.w : undefined; });
+  if (row.some(Boolean)) CH[tour][2026] = row;
+});
+const A = {tour:'all', era:'all', who:null, col:SLAM_IDS.indexOf(location.hash.slice(1))};
+const tours = () => A.tour === 'all' ? ['ATP','WTA'] : [A.tour];
+const years = () => Object.keys(CH.ATP).map(Number).filter(y => A.era === 'all' || (y >= +A.era && y < +A.era + 10)).sort((a,b) => b - a);
+const name = (n, tour) => n === null ? '<span class="ex">Not held</span>' : n === undefined ? '<span class="ex">—</span>'
+  : `<button type="button" class="who${A.who === n ? ' on' : ''}" data-n="${n}">${n}</button>${A.tour === 'all' ? ` <small class="ex">${tour}</small>` : ''}`;
+
+function render(){
+  $('#champs').innerHTML = `<thead><tr><th>Year</th>${SLAMS.map((s, i) => `<th class="${A.col === i ? 'col' : ''}"><i class="dot ${s.sf}"></i> ${s.n}</th>`).join('')}</tr></thead>
+  <tbody>${years().map(y => `<tr><td class="n">${y}</td>${SLAMS.map((s, i) => `<td class="${A.col === i ? 'col' : ''}">${tours().map(t => `<div>${name((CH[t][y] || [])[i], t)}</div>`).join('')}</td>`).join('')}</tr>`).join('')}</tbody>`;
+
+  const c = {};
+  years().forEach(y => tours().forEach(t => (CH[t][y] || []).forEach((n, i) => {
+    if (!n) return;
+    (c[n] = c[n] || {n, t, v:0, ev:[]}); c[n].v++; c[n].ev.push(`${SLAMS[i].n} ${y}`);
+  })));
+  const rows = Object.values(c).sort((a,b) => b.v - a.v || a.n.localeCompare(b.n)).slice(0, 12);
+  const ys = years(), max = Math.max(4, Math.ceil(rows[0].v / 4) * 4);
+  $('#lbTitle').textContent = `Most majors${A.tour === 'all' ? '' : `, ${A.tour}`}`;
+  $('#lbCap').textContent = `Singles titles won ${ys[ys.length-1]}–${ys[0]}`;
+  hbars($('#lb'), rows.map(r => ({n:`${r.n}${A.tour === 'all' ? ` (${r.t})` : ''}`, v:r.v, me:A.who === r.n, tip:`${r.n} · ${r.ev.join(', ')}`})), max, [0, max/4, max/2, max*3/4, max], '');
+  $('#lb').querySelectorAll('.hb').forEach((b, i) => {
+    b.tabIndex = 0; b.setAttribute('role', 'button');
+    const pick = () => { A.who = A.who === rows[i].n ? null : rows[i].n; render(); };
+    b.onclick = pick; b.onkeydown = e => { if (e.key === 'Enter' || e.key === ' '){ e.preventDefault(); pick(); } };
+  });
+  document.querySelectorAll('#champs .who').forEach(b => b.onclick = () => { A.who = A.who === b.dataset.n ? null : b.dataset.n; render(); });
+  $('#champs').classList.toggle('picking', !!A.who);
+  $('#aClear').hidden = !A.who;
+}
+segInit('aTour', v => { A.tour = v; render(); });
+segInit('aEra', v => { A.era = v; render(); });
+$('#aClear').onclick = () => { A.who = null; render(); };
+render();
+</script>
+
+<nav class="nextprev" aria-label="More topics">
+  <a href="history.html"><small>← Previous</small><b>History</b></a>
+  <a class="next" href="rackets.html"><small>Next →</small><b>Rackets</b></a>
+</nav>
+</main>
+<div class="wrap"><footer><p>Data: Wikipedia’s 2026 ATP Tour, WTA Tour, ATP Masters 1000 and WTA 1000 pages and the ATP/WTA rankings of September 28, 2026, compiled on October 5, 2026. Some ATP 250 and 500 dates are by tournament week, and events from October on may change. Finals without a confirmed score are marked “Score not recorded”. Racket specs are manufacturer figures.</p></footer></div>
+</body>
+</html>

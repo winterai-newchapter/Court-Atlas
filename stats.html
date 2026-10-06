@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Statistics · Court Atlas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;800&family=Public+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<link rel="stylesheet" href="styles.css">
+<script src="data.js"></script>
+<script src="common.js"></script>
+</head>
+<body>
+<header class="top"><div class="wrap">
+  <a class="brand" href="index.html"><b>Court Atlas</b><span>2026 season</span></a>
+  <nav id="nav"><a href="season.html">Season Map</a><a href="history.html">History</a><a href="archive.html">Past Champions</a><a href="rackets.html">Rackets</a><a href="strings.html">Strings</a><a href="players.html">Players</a><a href="stats.html" class="on" aria-current="page">Statistics</a></nav>
+</div></header>
+<main class="wrap page">
+<p class="crumb"><a href="index.html">Home</a><span aria-hidden="true">/</span><span>Statistics</span></p>
+<div class="page-head">
+  <p class="eyebrow">Points, titles, majors</p>
+  <h1>Statistics</h1>
+  <p>Ranking points and 2026 title counts for the leading players on both tours. Hover a bar for details.</p>
+</div>
+
+<section>
+  <div class="seg ptabs" id="sSeg" role="group" aria-label="Tour">
+    <button id="s-all" aria-pressed="true" data-v="all">ATP &amp; WTA</button>
+    <button id="s-atp" aria-pressed="false" data-v="ATP">ATP men</button>
+    <button id="s-wta" aria-pressed="false" data-v="WTA">WTA women</button>
+  </div>
+  <div class="stats" id="statsGrid"></div>
+</section>
+
+<script>
+const TOURNAME = {ATP:'ATP men', WTA:'WTA women'};
+const panel = (id, title, cap, wide) => `<div class="panel chart"${wide ? ' style="grid-column:1/-1"' : ''}><h3>${title}</h3><p class="cap">${cap}</p><div class="hbars" id="${id}"></div></div>`;
+function render(v){
+  const tours = v === 'all' ? ['ATP','WTA'] : [v];
+  $('#statsGrid').innerHTML = tours.map(t =>
+      panel(`pts${t}`, `${t} ranking points`, `Top 10, rankings of Sept 28, 2026`)
+    + panel(`ttl${t}`, `${t} 2026 titles`, `Counted across tournaments covered on this site (Slams, 1000s, 500s and some 250s)`)).join('')
+    + panel('slamChart', `Career Grand Slam singles titles, current top 10${tours.length > 1 ? 's' : ''}`, `Through the 2026 US Open, ${tours.length > 1 ? 'ATP and WTA combined' : TOURNAME[v]} · <a href="archive.html">every champion since 2000 →</a>`, true);
+  tours.forEach(tour => {
+    hbars($(`#pts${tour}`), PLAYERS[tour].map(p => ({n:`${p.rk}. ${p.n}`, v:p.pts, tip:`${p.n} · ${p.co} · ${p.pts.toLocaleString('en-US')} pts`})), 12000, [0,3000,6000,9000,12000], '');
+    const c = {};
+    T.forEach(t => t.res.forEach(r => { if (r.t === tour){ (c[r.w] = c[r.w] || {n:r.w, v:0, ev:[]}); c[r.w].v++; c[r.w].ev.push(t.name); } }));
+    const rows = Object.values(c).sort((a,b) => b.v - a.v || a.n.localeCompare(b.n)).slice(0,10);
+    hbars($(`#ttl${tour}`), rows.map(r => ({n:r.n, v:r.v, tip:`${r.n} · ${r.ev.join(', ')}`})), 6, [0,2,4,6], '');
+  });
+  const slams = tours.flatMap(t => PLAYERS[t].map(p => ({...p, t}))).filter(p => p.gs > 0).sort((a,b) => b.gs - a.gs);
+  hbars($('#slamChart'), slams.map(p => ({n:tours.length > 1 ? `${p.n} (${p.t})` : p.n, v:p.gs, tip:`${p.n} · ${p.gs} major titles`})), 8, [0,2,4,6,8], '');
+}
+segInit('sSeg', render);
+render('all');
+</script>
+
+<nav class="nextprev" aria-label="More topics">
+  <a href="players.html"><small>← Previous</small><b>Players</b></a>
+  <a class="next" href="index.html"><small>Back to →</small><b>Home</b></a>
+</nav>
+</main>
+<div class="wrap"><footer><p>Data: Wikipedia’s 2026 ATP Tour, WTA Tour, ATP Masters 1000 and WTA 1000 pages and the ATP/WTA rankings of September 28, 2026, compiled on October 5, 2026. Some ATP 250 and 500 dates are by tournament week, and events from October on may change. Finals without a confirmed score are marked “Score not recorded”. Racket specs are manufacturer figures.</p></footer></div>
+</body>
+</html>

@@ -1,0 +1,858 @@
+<title>코트 아틀라스</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;800&family=IBM+Plex+Sans+KR:wght@400;500;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: 경기장 전광판 느낌의 상단 바 + 지도·월별 타임라인이 중심인 대시보드, 아래로 히스토리/장비/선수 섹션 */
+:root{
+  --bg:#F2F5F1;          /* 라인 페인트 같은 연녹 화이트 */
+  --surface:#FFFFFF;
+  --sunk:#E7ECE6;
+  --land:#D5DDD3;
+  --ink:#13201A;         /* 코트 네트 잉크 */
+  --muted:#5A6B61;
+  --line:#D3DBD2;
+  --ball:#D4EA2C;        /* 옵틱 옐로 볼 — 강조 배경 전용 */
+  --ball-ink:#13201A;
+  --accent:#4C6A00;      /* 텍스트용 볼 그린 */
+  --hard:#2A62C4; --clay:#E5803E; --grass:#1E7A3C;
+  --live:#C2321F;
+  --f-display:"Big Shoulders Display","Arial Narrow",Impact,sans-serif;
+  --f-body:"IBM Plex Sans KR","Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;
+  --r:6px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --bg:#0F1512; --surface:#151C18; --sunk:#1C2520; --land:#2A3630;
+    --ink:#E8EEE8; --muted:#9AAAA0; --line:#2C3832;
+    --ball:#D4EA2C; --ball-ink:#13201A; --accent:#C7DE3A;
+    --hard:#5C8FE6; --clay:#E8904F; --grass:#2F8A4A; --live:#F0644E;
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#0F1512; --surface:#151C18; --sunk:#1C2520; --land:#2A3630;
+  --ink:#E8EEE8; --muted:#9AAAA0; --line:#2C3832;
+  --ball:#D4EA2C; --ball-ink:#13201A; --accent:#C7DE3A;
+  --hard:#5C8FE6; --clay:#E8904F; --grass:#2F8A4A; --live:#F0644E;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion: reduce){html{scroll-behavior:auto}*{animation:none!important;transition:none!important}}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.6;padding-inline:clamp(16px,3vw,40px)}
+.wrap{max-width:1280px;margin-inline:auto}
+h1,h2,h3{text-wrap:balance;line-height:1.2;margin:0}
+p{margin:0}
+button{font:inherit;color:inherit;cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.num,.mono{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+.eyebrow{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:500}
+
+/* header */
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--bg);border-bottom:1px solid var(--line);margin-inline:calc(-1*clamp(16px,3vw,40px));padding-inline:clamp(16px,3vw,40px)}
+.top .wrap{display:flex;align-items:center;gap:24px;padding-block:10px;flex-wrap:wrap}
+.brand{display:flex;align-items:baseline;gap:10px}
+.brand b{font-family:var(--f-display);font-weight:800;font-size:28px;letter-spacing:.02em;text-transform:uppercase}
+.brand span{font-size:13px;color:var(--muted)}
+nav{display:flex;gap:4px;flex-wrap:wrap;margin-left:auto}
+nav a{color:var(--ink);text-decoration:none;font-size:14px;padding:6px 10px;border-radius:999px}
+nav a:hover{background:var(--sunk)}
+nav a.on{background:var(--ink);color:var(--bg)}
+
+section{padding-block:48px 8px}
+.sec-head{display:flex;align-items:end;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:20px}
+.sec-head h2{font-size:clamp(26px,3.4vw,36px);font-weight:700}
+.sec-head p{color:var(--muted);max-width:60ch}
+
+/* hero scoreboard */
+.board{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:2px;background:var(--line);border:1px solid var(--line);border-radius:var(--r);overflow:hidden;margin-top:28px}
+.board > div{background:var(--surface);padding:16px 18px;display:flex;flex-direction:column;gap:4px}
+.board .slam{font-size:13px;color:var(--muted);display:flex;align-items:center;gap:8px}
+.board .w{font-weight:700;font-size:15px}
+.board .w small{font-weight:400;color:var(--muted)}
+.chip{display:inline-flex;align-items:center;gap:6px;font-size:12px;padding:2px 8px;border-radius:999px;background:var(--sunk);color:var(--ink);white-space:nowrap}
+.dot{width:9px;height:9px;display:inline-block;flex:none}
+.dot.hard{background:var(--hard);border-radius:50%}
+.dot.clay{background:var(--clay)}
+.dot.grass{background:var(--grass);transform:rotate(45deg) scale(.85)}
+
+.hero{padding-block:36px 0}
+.hero h1{font-family:var(--f-display);font-weight:800;font-size:clamp(44px,7vw,88px);text-transform:uppercase;line-height:.92;letter-spacing:.01em}
+.hero h1 em{font-style:normal;background:var(--ball);color:var(--ball-ink);padding:0 .12em}
+.hero p{margin-top:14px;color:var(--muted);max-width:62ch}
+
+/* map dashboard */
+.dash{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:16px}
+@media (max-width:960px){.dash{grid-template-columns:1fr}}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r)}
+.toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;padding:10px 12px;border-bottom:1px solid var(--line)}
+.seg{display:inline-flex;background:var(--sunk);border-radius:999px;padding:2px}
+.seg button{border:0;background:none;padding:4px 12px;border-radius:999px;font-size:13px}
+.seg button[aria-pressed="true"]{background:var(--surface);box-shadow:0 0 0 1px var(--line);font-weight:600}
+.legend{display:flex;gap:12px;font-size:12px;color:var(--muted);margin-left:auto;flex-wrap:wrap}
+.legend span{display:inline-flex;align-items:center;gap:5px}
+.mapbox{position:relative}
+#map{display:block;width:100%;height:auto;aspect-ratio:1000/470;max-width:100%}
+#map .land{fill:var(--land);stroke:var(--surface);stroke-width:.4}
+#map .sphere{fill:var(--sunk)}
+#map .mk{cursor:pointer}
+#map .mk .shape{stroke:var(--surface)}
+#map .mk.up .shape{fill:var(--surface)!important;stroke-width:2}
+#map .mk:hover .shape,#map .mk.sel .shape{stroke:var(--ink)}
+#map .ring{fill:none;stroke:var(--live);animation:pulse 1.6s ease-out infinite;transform-box:fill-box;transform-origin:center}
+@keyframes pulse{from{opacity:.9;transform:scale(.6)}to{opacity:0;transform:scale(1.8)}}
+.tip{position:absolute;pointer-events:none;background:var(--ink);color:var(--bg);font-size:12px;padding:6px 9px;border-radius:4px;white-space:nowrap;transform:translate(-50%,calc(-100% - 10px));z-index:3}
+.tip[hidden]{display:none}
+
+/* month timeline */
+.months{display:grid;grid-template-columns:auto repeat(12,minmax(0,1fr));gap:4px;padding:12px;border-top:1px solid var(--line);align-items:end}
+.months button{border:1px solid transparent;background:none;padding:6px 2px 4px;border-radius:4px;display:flex;flex-direction:column;align-items:center;gap:4px;min-width:0}
+.months button:hover{background:var(--sunk)}
+.months button[aria-pressed="true"]{border-color:var(--ink);background:var(--sunk)}
+.months .bars{display:flex;flex-direction:column-reverse;gap:1px;height:44px;width:100%;max-width:26px;justify-content:flex-start}
+.months .bars i{display:block;border-radius:1px}
+.months .m{font-size:12px;font-family:var(--f-mono)}
+.months .m.now{background:var(--ball);color:var(--ball-ink);border-radius:3px;padding:0 3px}
+.months .all{align-self:stretch;justify-content:center;font-size:13px;padding-inline:10px}
+.play{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:4px 12px;font-size:13px}
+@media (max-width:560px){.months{grid-template-columns:repeat(7,minmax(0,1fr))}.months .all{grid-column:span 1}}
+
+.side{display:flex;flex-direction:column;max-height:720px}
+.side h3{font-size:15px;padding:14px 16px 6px}
+.side .count{padding:0 16px 10px;color:var(--muted);font-size:13px}
+.evlist{list-style:none;margin:0;padding:0 8px 8px;overflow:auto;flex:1}
+.evlist li button{width:100%;text-align:left;border:0;background:none;padding:8px;border-radius:4px;display:grid;grid-template-columns:14px 1fr auto;gap:8px;align-items:center}
+.evlist li button:hover,.evlist li button.sel{background:var(--sunk)}
+.evlist .nm{font-weight:500;font-size:14px;line-height:1.3}
+.evlist .sub{font-size:12px;color:var(--muted)}
+.st{font-size:11px;padding:1px 7px;border-radius:999px;white-space:nowrap;border:1px solid var(--line)}
+.st.done{background:var(--sunk)}
+.st.live{background:var(--live);color:#fff;border-color:var(--live)}
+.st.up{background:none;border-style:dashed}
+.empty{padding:20px 16px;color:var(--muted);font-size:14px}
+
+.detail{border-top:1px solid var(--line);padding:14px 16px 16px;display:flex;flex-direction:column;gap:10px}
+.detail h4{margin:0;font-size:18px;line-height:1.3}
+.detail .meta{display:flex;gap:6px;flex-wrap:wrap}
+.res{display:grid;grid-template-columns:44px 1fr;gap:4px 10px;font-size:14px;align-items:baseline}
+.res .tour{font-size:11px;font-weight:700;letter-spacing:.08em;color:var(--muted)}
+.res .score{grid-column:2;font-family:var(--f-mono);font-size:13px;color:var(--muted)}
+.res b{font-weight:700}
+
+/* history */
+.hist{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);gap:24px}
+@media (max-width:900px){.hist{grid-template-columns:1fr}}
+.tl{list-style:none;margin:0;padding:0;border-left:2px solid var(--line);margin-left:6px}
+.tl li{position:relative;padding:0 0 18px 22px}
+.tl li::before{content:"";position:absolute;left:-7px;top:6px;width:12px;height:12px;border-radius:50%;background:var(--surface);border:2px solid var(--ink)}
+.tl li.big::before{background:var(--ball);border-color:var(--ink)}
+.tl .yr{font-family:var(--f-display);font-weight:800;font-size:24px;line-height:1}
+.tl h3{font-size:15px;margin-top:4px}
+.tl p{color:var(--muted);font-size:14px;max-width:62ch}
+.rec{padding:18px}
+.rec h3{font-size:16px;margin-bottom:12px}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th,td{text-align:left;padding:8px 6px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:12px;color:var(--muted);font-weight:500;letter-spacing:.04em}
+td.n,th.n{text-align:right;font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+.tablebox{overflow-x:auto}
+.slam4{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:16px}
+.slam4 div{border:1px solid var(--line);border-radius:4px;padding:10px 12px;font-size:13px}
+.slam4 b{display:flex;align-items:center;gap:6px;font-size:14px}
+
+/* rackets */
+.gear{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px}
+@media (max-width:900px){.gear{grid-template-columns:1fr}}
+.scatter{padding:14px}
+.scatter svg{width:100%;height:auto;display:block}
+.scatter text{fill:var(--muted);font-family:var(--f-mono);font-size:11px}
+.scatter .lbl{fill:var(--ink);font-family:var(--f-body);font-size:11px}
+.scatter .grid{stroke:var(--line)}
+.scatter .pt{fill:var(--ink);stroke:var(--surface);stroke-width:2;cursor:pointer}
+.scatter .pt.hl{fill:var(--accent)}
+.filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.rk td:first-child{font-weight:500}
+.rk tr.hl td{background:var(--sunk)}
+.ex{font-size:12px;color:var(--muted)}
+.explain{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-top:16px}
+.explain div{border-top:2px solid var(--ink);padding-top:10px}
+.explain h3{font-size:15px}
+.explain p{font-size:14px;color:var(--muted)}
+
+/* strings */
+.pips{display:inline-flex;gap:3px}
+.pips i{width:10px;height:10px;border-radius:2px;background:var(--line)}
+.pips i.on{background:var(--ink)}
+.calc{padding:18px;display:flex;flex-direction:column;gap:14px}
+.calc label{font-size:13px;color:var(--muted);display:block;margin-bottom:4px}
+.calc input[type=range]{width:100%;accent-color:var(--accent)}
+.calc .big{font-family:var(--f-display);font-weight:800;font-size:48px;line-height:1}
+.calc .big small{font-size:20px;color:var(--muted);margin-left:4px}
+.calc .row{display:flex;gap:24px;flex-wrap:wrap;align-items:end}
+.zone{height:10px;border-radius:5px;background:linear-gradient(90deg,var(--hard),var(--sunk) 50%,var(--clay));position:relative;margin-top:6px}
+.zone i{position:absolute;top:-4px;width:4px;height:18px;background:var(--ink);border-radius:2px;transform:translateX(-50%)}
+.zone-l{display:flex;justify-content:space-between;font-size:12px;color:var(--muted)}
+
+/* players */
+.ptabs{margin-bottom:14px}
+.players{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px}
+.pc{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px;text-align:left;display:flex;flex-direction:column;gap:8px}
+.pc:hover{border-color:var(--ink)}
+.pc[aria-pressed="true"]{border-color:var(--ink);box-shadow:inset 0 0 0 1px var(--ink)}
+.pc .rank{font-family:var(--f-display);font-weight:800;font-size:40px;line-height:.9}
+.pc .ptop{display:flex;justify-content:space-between;align-items:start;gap:8px}
+.pc h3{font-size:16px}
+.pc .en{font-size:12px;color:var(--muted)}
+.pc .kv{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;font-size:12px;color:var(--muted)}
+.pc .kv b{display:block;color:var(--ink);font-family:var(--f-mono);font-size:15px;font-weight:600}
+.pdetail{margin-top:16px;padding:18px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr);gap:24px}
+@media (max-width:800px){.pdetail{grid-template-columns:1fr}}
+.pdetail h3{font-size:24px}
+.facts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px 16px;margin-top:12px;font-size:14px}
+.facts dt{font-size:12px;color:var(--muted)}
+.facts dd{margin:0;font-weight:500}
+
+/* stats */
+.stats{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px}
+@media (max-width:900px){.stats{grid-template-columns:1fr}}
+.chart{padding:16px}
+.chart h3{font-size:16px}
+.chart .cap{font-size:13px;color:var(--muted);margin-bottom:12px}
+.hbars{display:flex;flex-direction:column;gap:6px;position:relative}
+.hb{display:grid;grid-template-columns:150px 1fr 64px;gap:10px;align-items:center;font-size:13px;border-radius:4px;padding:2px 4px;cursor:default}
+.hb:hover{background:var(--sunk)}
+.hb .track{height:14px;position:relative}
+.hb .fill{position:absolute;inset:0 auto 0 0;background:var(--ink);border-radius:0 4px 4px 0}
+.hb.me .fill{background:var(--accent)}
+.hb .v{text-align:right;font-family:var(--f-mono);font-variant-numeric:tabular-nums;color:var(--muted)}
+.hb .nm{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.axis{display:grid;grid-template-columns:150px 1fr 64px;gap:10px;font-size:11px;color:var(--muted);font-family:var(--f-mono);padding-inline:4px}
+.axis div{display:flex;justify-content:space-between}
+@media (max-width:520px){.hb,.axis{grid-template-columns:96px 1fr 52px}}
+
+footer{padding-block:48px 40px;color:var(--muted);font-size:13px;border-top:1px solid var(--line);margin-top:48px}
+footer p{max-width:80ch}
+</style>
+
+<header class="top">
+  <div class="wrap">
+    <div class="brand"><b>Court Atlas</b><span>코트 아틀라스 · 2026 시즌</span></div>
+    <nav id="nav">
+      <a href="#season">시즌 지도</a>
+      <a href="#history">히스토리</a>
+      <a href="#rackets">라켓</a>
+      <a href="#strings">스트링</a>
+      <a href="#players">선수</a>
+      <a href="#stats">통계</a>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="hero">
+    <p class="eyebrow">2026년 10월 5일 기준 · ATP / WTA</p>
+    <h1>2026 시즌,<br><em>지도</em> 위에서 따라가기</h1>
+    <p>지도에서 대회를 골라 결과를 보고, 1월부터 12월까지 월별로 투어가 어디로 이동하는지 확인하세요. 아래에는 테니스의 역사, 라켓과 스트링 가이드, 상위 선수 프로필과 통계가 이어집니다.</p>
+    <div class="board" id="board"></div>
+  </div>
+
+  <section id="season">
+    <div class="sec-head">
+      <div><p class="eyebrow">Season map</p><h2>시즌 지도</h2></div>
+      <p>마커 모양은 코트 표면(●하드 ■클레이 ◆잔디), 크기는 대회 등급입니다. 속이 빈 마커는 아직 열리지 않은 대회입니다.</p>
+    </div>
+    <div class="dash">
+      <div class="panel">
+        <div class="toolbar">
+          <div class="seg" id="tourSeg" role="group" aria-label="투어">
+            <button id="t-all" aria-pressed="true" data-v="all">전체</button>
+            <button id="t-atp" aria-pressed="false" data-v="ATP">ATP</button>
+            <button id="t-wta" aria-pressed="false" data-v="WTA">WTA</button>
+          </div>
+          <div class="seg" id="regionSeg" role="group" aria-label="지역">
+            <button id="r-world" aria-pressed="true" data-v="world">세계</button>
+            <button id="r-eu" aria-pressed="false" data-v="eu">유럽·중동</button>
+            <button id="r-am" aria-pressed="false" data-v="am">미주</button>
+            <button id="r-ap" aria-pressed="false" data-v="ap">아시아·오세아니아</button>
+          </div>
+          <div class="legend">
+            <span><i class="dot hard"></i>하드</span>
+            <span><i class="dot clay"></i>클레이</span>
+            <span><i class="dot grass"></i>잔디</span>
+          </div>
+        </div>
+        <div class="mapbox" id="mapbox">
+          <svg id="map" viewBox="0 0 1000 470" role="img" aria-label="2026 테니스 대회 세계 지도">
+            <path class="sphere" d="__SPHERE__"></path>
+            <path class="land" d="__LAND__"></path>
+            <g id="markers"></g>
+          </svg>
+          <div class="tip" id="tip" hidden></div>
+        </div>
+        <div class="months" id="months"></div>
+      </div>
+
+      <aside class="panel side" aria-live="polite">
+        <div style="display:flex;justify-content:space-between;align-items:center;padding-right:12px">
+          <h3 id="listTitle">전체 시즌</h3>
+          <button class="play" id="play" type="button">▶ 월별 재생</button>
+        </div>
+        <p class="count" id="listCount"></p>
+        <ul class="evlist" id="evlist"></ul>
+        <div class="detail" id="detail"></div>
+      </aside>
+    </div>
+  </section>
+
+  <section id="history">
+    <div class="sec-head">
+      <div><p class="eyebrow">History</p><h2>테니스 히스토리</h2></div>
+      <p>잔디 위 정원 놀이에서 전자 판정까지, 현대 테니스를 만든 순간들입니다.</p>
+    </div>
+    <div class="hist">
+      <ol class="tl" id="timeline"></ol>
+      <div style="display:flex;flex-direction:column;gap:16px">
+        <div class="panel rec">
+          <h3>그랜드슬램 단식 최다 우승</h3>
+          <div class="tablebox"><table id="recTable"></table></div>
+        </div>
+        <div class="panel rec">
+          <h3>4대 메이저</h3>
+          <div class="slam4" id="slam4"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="rackets">
+    <div class="sec-head">
+      <div><p class="eyebrow">Rackets</p><h2>라켓 정보</h2></div>
+      <p>대표 모델의 제조사 공개 사양(무게는 줄을 매지 않은 상태)입니다. 점을 누르면 표에서 해당 모델이 강조됩니다.</p>
+    </div>
+    <div class="gear">
+      <div class="panel scatter">
+        <div class="filters seg" id="headSeg" role="group" aria-label="헤드 크기">
+          <button id="h-all" aria-pressed="true" data-v="all">전체</button>
+          <button id="h-small" aria-pressed="false" data-v="small">97–98 in²</button>
+          <button id="h-big" aria-pressed="false" data-v="big">100 in²</button>
+        </div>
+        <svg id="scatter" viewBox="0 0 520 330" role="img" aria-label="라켓 무게와 헤드 크기 산점도"></svg>
+      </div>
+      <div class="panel tablebox" style="padding:8px 14px">
+        <table class="rk" id="racketTable"></table>
+      </div>
+    </div>
+    <div class="explain">
+      <div><h3>헤드 크기</h3><p>100in² 이상은 스윗스팟이 넓어 관용성과 파워가 좋고, 95–98in²는 컨트롤과 타구감이 선명합니다.</p></div>
+      <div><h3>무게</h3><p>285–300g은 스윙이 가볍고, 305–320g은 안정성과 공을 밀어내는 힘이 큽니다. 프로는 납 테이프로 330g 이상까지 올리기도 합니다.</p></div>
+      <div><h3>줄 패턴</h3><p>16×19 같은 오픈 패턴은 스핀과 반발력이, 18×20 덴스 패턴은 컨트롤과 줄 내구성이 유리합니다.</p></div>
+      <div><h3>밸런스</h3><p>헤드 라이트는 조작성이 좋아 네트 플레이에, 헤드 헤비는 가벼운 라켓에 타구 무게를 더해 줍니다.</p></div>
+    </div>
+  </section>
+
+  <section id="strings">
+    <div class="sec-head">
+      <div><p class="eyebrow">Strings</p><h2>스트링 가이드</h2></div>
+      <p>소재마다 성향이 뚜렷합니다. 평점은 소재 간 상대 비교(1–5)입니다.</p>
+    </div>
+    <div class="gear">
+      <div class="panel tablebox" style="padding:8px 14px">
+        <table id="stringTable"></table>
+      </div>
+      <div class="panel calc">
+        <div>
+          <p class="eyebrow">텐션 계산기</p>
+          <p class="ex" style="margin-top:4px">일반적인 장력 범위는 20–28kg(약 44–62lbs)입니다. 낮을수록 반발력, 높을수록 컨트롤이 커집니다.</p>
+        </div>
+        <div>
+          <label for="tension">텐션 (kg)</label>
+          <input type="range" id="tension" min="18" max="30" step="0.5" value="24">
+        </div>
+        <div class="row">
+          <div><div class="big num" id="tKg">24<small>kg</small></div></div>
+          <div><div class="big num" id="tLb">52.9<small>lbs</small></div></div>
+        </div>
+        <div>
+          <div class="zone"><i id="tMark"></i></div>
+          <div class="zone-l"><span>반발력·편안함</span><span>균형</span><span>컨트롤·정확도</span></div>
+        </div>
+        <p id="tAdvice" style="font-size:14px"></p>
+        <div class="tablebox">
+          <table>
+            <thead><tr><th>게이지</th><th class="n">두께 (mm)</th><th>특징</th></tr></thead>
+            <tbody>
+              <tr><td>15L</td><td class="n">1.34–1.40</td><td>내구성 최상, 반발력 낮음</td></tr>
+              <tr><td>16</td><td class="n">1.26–1.33</td><td>가장 보편적인 표준 두께</td></tr>
+              <tr><td>16L / 17</td><td class="n">1.18–1.25</td><td>스핀·타구감 향상, 빨리 끊어짐</td></tr>
+              <tr><td>18</td><td class="n">1.06–1.17</td><td>최대 스핀·반발, 내구성 낮음</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="players">
+    <div class="sec-head">
+      <div><p class="eyebrow">Players</p><h2>선수</h2></div>
+      <p>2026년 9월 28일 발표 랭킹 상위 10명입니다. 카드를 누르면 상세 정보와 이 사이트에 수록된 2026년 결승 기록이 나옵니다.</p>
+    </div>
+    <div class="seg ptabs" id="pSeg" role="group" aria-label="투어 선택">
+      <button id="p-atp" aria-pressed="true" data-v="ATP">ATP 남자</button>
+      <button id="p-wta" aria-pressed="false" data-v="WTA">WTA 여자</button>
+    </div>
+    <div class="players" id="playerGrid"></div>
+    <div class="panel pdetail" id="pdetail"></div>
+  </section>
+
+  <section id="stats">
+    <div class="sec-head">
+      <div><p class="eyebrow">Statistics</p><h2>선수 통계</h2></div>
+      <p>랭킹 포인트와 2026 시즌 우승 횟수입니다. 막대에 마우스를 올리면 세부 값이 보입니다.</p>
+    </div>
+    <div class="stats">
+      <div class="panel chart">
+        <h3 id="ptsTitle">ATP 랭킹 포인트</h3>
+        <p class="cap">2026-09-28 기준, 상위 10명</p>
+        <div class="hbars" id="ptsChart"></div>
+      </div>
+      <div class="panel chart">
+        <h3>2026 우승 횟수</h3>
+        <p class="cap">이 사이트 수록 대회(그랜드슬램·1000·500·일부 250) 기준, ATP·WTA 합산</p>
+        <div class="hbars" id="titleChart"></div>
+      </div>
+      <div class="panel chart" style="grid-column:1/-1">
+        <h3>통산 그랜드슬램 단식 우승 (현역 상위 랭커)</h3>
+        <p class="cap">2026 US 오픈까지</p>
+        <div class="hbars" id="slamChart"></div>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <p>데이터: 위키백과 2026 ATP 투어·WTA 투어·마스터스 1000·WTA 1000 문서, ATP/WTA 랭킹(2026-09-28 발표)을 2026-10-05에 정리했습니다. 일부 ATP 250·500 대회 날짜는 개최 주간 기준이며, 10월 이후 일정은 변동될 수 있습니다. 결승 스코어를 확인하지 못한 경기는 ‘스코어 미수록’으로 표시했습니다. 라켓 사양은 제조사 공개값 기준입니다.</p>
+  </footer>
+</main>
+
+<script>
+const TODAY = new Date('2026-10-05T12:00:00');
+const MAPP = {s:__S__, t:__T__};
+
+/* ---------- data ---------- */
+const T = [
+ {id:'uc',name:'유나이티드컵',en:'United Cup',city:'퍼스·시드니',co:'호주',lat:-31.95,lon:115.86,s:'2026-01-02',e:'2026-01-11',lv:'Team',tour:'BOTH',sf:'hard',res:[{t:'혼성',w:'폴란드',r:'스위스',sc:'2–1'}]},
+ {id:'bri',name:'브리즈번 인터내셔널',en:'Brisbane International',city:'브리즈번',co:'호주',lat:-27.47,lon:153.03,s:'2026-01-04',e:'2026-01-11',lv:'250',tour:'ATP',sf:'hard',res:[{t:'ATP',w:'다닐 메드베데프',r:'브랜던 나카시마',sc:'6–2, 7–6(1)'}]},
+ {id:'hk',name:'홍콩 오픈',en:'Hong Kong Open',city:'홍콩',co:'중국',lat:22.32,lon:114.17,s:'2026-01-04',e:'2026-01-11',lv:'250',tour:'ATP',sf:'hard',res:[{t:'ATP',w:'알렉산더 부블릭',r:'로렌초 무세티',sc:'7–6(2), 6–3'}]},
+ {id:'ade',name:'애들레이드 인터내셔널',en:'Adelaide International',city:'애들레이드',co:'호주',lat:-34.93,lon:138.6,s:'2026-01-11',e:'2026-01-17',lv:'250',tour:'ATP',sf:'hard',res:[{t:'ATP',w:'토마시 마하치',r:'위고 엄베르',sc:'6–4, 6–7(2), 6–2'}]},
+ {id:'auk',name:'오클랜드 오픈',en:'ASB Classic',city:'오클랜드',co:'뉴질랜드',lat:-36.85,lon:174.76,s:'2026-01-11',e:'2026-01-17',lv:'250',tour:'ATP',sf:'hard',res:[{t:'ATP',w:'야쿠프 멘시크',r:'세바스티안 바에스',sc:'6–3, 7–6(7)'}]},
+ {id:'ao',name:'호주 오픈',en:'Australian Open',city:'멜버른',co:'호주',lat:-37.82,lon:144.98,s:'2026-01-18',e:'2026-02-01',lv:'GS',tour:'BOTH',sf:'hard',res:[{t:'ATP',w:'카를로스 알카라스',r:'노바크 조코비치',sc:'2–6, 6–2, 6–3, 7–5'},{t:'WTA',w:'엘레나 리바키나',r:'아리나 사발렌카',sc:'6–4, 4–6, 6–4'}],note:'알카라스가 22세 272일로 남자 최연소 커리어 그랜드슬램을 달성했습니다.'},
+ {id:'mpl',name:'옥시타니 오픈',en:'Open Occitanie',city:'몽펠리에',co:'프랑스',lat:43.61,lon:3.88,s:'2026-02-02',e:'2026-02-08',lv:'250',tour:'ATP',sf:'hard',indoor:true,res:[{t:'ATP',w:'펠릭스 오제알리아심',r:'아드리안 마나리노',sc:'6–3, 7–6(4)'}]},
+ {id:'dal',name:'댈러스 오픈',en:'Dallas Open',city:'댈러스',co:'미국',lat:32.78,lon:-96.8,s:'2026-02-09',e:'2026-02-15',lv:'500',tour:'ATP',sf:'hard',indoor:true,res:[{t:'ATP',w:'벤 셸턴',r:'테일러 프리츠',sc:'3–6, 6–3, 7–5'}]},
+ {id:'rot',name:'로테르담 오픈',en:'Rotterdam Open',city:'로테르담',co:'네덜란드',lat:51.92,lon:4.48,s:'2026-02-09',e:'2026-02-15',lv:'500',tour:'ATP',sf:'hard',indoor:true,res:[{t:'ATP',w:'앨릭스 디미노어',r:'펠릭스 오제알리아심',sc:'6–3, 6–2'}]},
+ {id:'bue',name:'아르헨티나 오픈',en:'Argentina Open',city:'부에노스아이레스',co:'아르헨티나',lat:-34.6,lon:-58.38,s:'2026-02-09',e:'2026-02-15',lv:'250',tour:'ATP',sf:'clay',res:[{t:'ATP',w:'프란시스코 세룬돌로',r:'루치아노 다르데리',sc:'6–4, 6–2'}]},
+ {id:'dohw',name:'카타르 오픈 (WTA)',en:'Qatar Open',city:'도하',co:'카타르',lat:25.29,lon:51.53,s:'2026-02-08',e:'2026-02-14',lv:'1000',tour:'WTA',sf:'hard',res:[{t:'WTA',w:'카롤리나 무호바',r:'빅토리아 음보코',sc:'6–4, 7–5'}]},
+ {id:'duxw',name:'두바이 챔피언십 (WTA)',en:'Dubai Tennis Championships',city:'두바이',co:'UAE',lat:25.2,lon:55.27,s:'2026-02-15',e:'2026-02-21',lv:'1000',tour:'WTA',sf:'hard',res:[{t:'WTA',w:'제시카 페굴라',r:'엘리나 스비톨리나',sc:'6–2, 6–4'}]},
+ {id:'doha',name:'카타르 오픈 (ATP)',en:'Qatar ExxonMobil Open',city:'도하',co:'카타르',lat:25.29,lon:51.53,s:'2026-02-16',e:'2026-02-21',lv:'500',tour:'ATP',sf:'hard',res:[{t:'ATP',w:'카를로스 알카라스',r:'아르튀르 피스',sc:'6–2, 6–1'}]},
+ {id:'rio',name:'리우 오픈',en:'Rio Open',city:'리우데자네이루',co:'브라질',lat:-22.91,lon:-43.17,s:'2026-02-16',e:'2026-02-22',lv:'500',tour:'ATP',sf:'clay',res:[{t:'ATP',w:'토마스 마르틴 에체베리',r:'알레한드로 타비요',sc:'3–6, 7–6(3), 6–4'}]},
+ {id:'del',name:'델레이비치 오픈',en:'Delray Beach Open',city:'델레이비치',co:'미국',lat:26.46,lon:-80.07,s:'2026-02-16',e:'2026-02-22',lv:'250',tour:'ATP',sf:'hard',res:[{t:'ATP',w:'세바스천 코르다',r:'토미 폴',sc:'6–4, 6–3'}]},
+ {id:'dub',name:'두바이 챔피언십 (ATP)',en:'Dubai Tennis Championships',city:'두바이',co:'UAE',lat:25.2,lon:55.27,s:'2026-02-23',e:'2026-02-28',lv:'500',tour:'ATP',sf:'hard',res:[{t:'ATP',w:'다닐 메드베데프',r:'탈론 흐리크스포르',sc:'기권승(W/O)'}]},
+ {id:'aca',name:'멕시칸 오픈',en:'Mexican Open',city:'아카풀코',co:'멕시코',lat:16.85,lon:-99.82,s:'2026-02-23',e:'2026-02-28',lv:'500',tour:'ATP',sf:'hard',res:[{t:'ATP',w:'플라비오 코볼리',r:'프랜시스 티아포',sc:'7–6(4), 6–4'}]},
+ {id:'scl',name:'칠레 오픈',en:'Chile Open',city:'산티아고',co:'칠레',lat:-33.45,lon:-70.67,s:'2026-02-23',e:'2026-03-01',lv:'250',tour:'ATP',sf:'clay',res:[{t:'ATP',w:'루치아노 다르데리',r:'야니크 한프만',sc:'7–6(6), 7–5'}]},
+ {id:'iw',name:'인디언웰스 오픈',en:'Indian Wells Open',city:'인디언웰스',co:'미국',lat:33.72,lon:-116.31,s:'2026-03-04',e:'2026-03-15',lv:'1000',tour:'BOTH',sf:'hard',res:[{t:'ATP',w:'야닉 시너',r:'다닐 메드베데프',sc:'7–6(6), 7–6(4)'},{t:'WTA',w:'아리나 사발렌카',r:'엘레나 리바키나',sc:'3–6, 6–3, 7–6(6)'}]},
+ {id:'mia',name:'마이애미 오픈',en:'Miami Open',city:'마이애미',co:'미국',lat:25.76,lon:-80.19,s:'2026-03-17',e:'2026-03-29',lv:'1000',tour:'BOTH',sf:'hard',res:[{t:'ATP',w:'야닉 시너',r:'이르지 레헤치카',sc:'6–4, 6–4'},{t:'WTA',w:'아리나 사발렌카',r:'코코 고프',sc:'6–2, 4–6, 6–3'}]},
+ {id:'mc',name:'몬테카를로 마스터스',en:'Monte-Carlo Masters',city:'몬테카를로',co:'모나코',lat:43.74,lon:7.42,s:'2026-04-05',e:'2026-04-12',lv:'1000',tour:'ATP',sf:'clay',res:[{t:'ATP',w:'야닉 시너',r:'카를로스 알카라스',sc:'7–6(5), 6–3'}]},
+ {id:'mad',name:'마드리드 오픈',en:'Mutua Madrid Open',city:'마드리드',co:'스페인',lat:40.42,lon:-3.7,s:'2026-04-21',e:'2026-05-03',lv:'1000',tour:'BOTH',sf:'clay',res:[{t:'ATP',w:'야닉 시너',r:'알렉산더 즈베레프',sc:'6–1, 6–2'},{t:'WTA',w:'마르타 코스튜크',r:'미라 안드레예바',sc:'6–3, 7–5'}],note:'시너가 한 시즌 첫 마스터스 다섯 대회를 연속 우승한 최초의 선수가 됐습니다(로마 포함).'},
+ {id:'rom',name:'이탈리아 오픈',en:"Internazionali BNL d'Italia",city:'로마',co:'이탈리아',lat:41.93,lon:12.45,s:'2026-05-05',e:'2026-05-17',lv:'1000',tour:'BOTH',sf:'clay',res:[{t:'ATP',w:'야닉 시너',r:'카스페르 루드',sc:'6–4, 6–4'},{t:'WTA',w:'엘리나 스비톨리나',r:'코코 고프',sc:'6–4, 6–7(3), 6–2'}]},
+ {id:'rg',name:'롤랑가로스 (프랑스 오픈)',en:'Roland Garros',city:'파리',co:'프랑스',lat:48.85,lon:2.25,s:'2026-05-24',e:'2026-06-07',lv:'GS',tour:'BOTH',sf:'clay',res:[{t:'ATP',w:'알렉산더 즈베레프',r:'플라비오 코볼리',sc:'6–1, 4–6, 6–4, 6–7(5), 6–1'},{t:'WTA',w:'미라 안드레예바',r:'마야 흐발린스카',sc:'스코어 미수록'}],note:'즈베레프의 첫 메이저 우승. 독일 남자 선수로는 1937년 이후 처음으로 롤랑가로스를 제패했습니다.'},
+ {id:'wim',name:'윔블던',en:'The Championships, Wimbledon',city:'런던',co:'영국',lat:51.43,lon:-0.21,s:'2026-06-29',e:'2026-07-12',lv:'GS',tour:'BOTH',sf:'grass',res:[{t:'ATP',w:'야닉 시너',r:'알렉산더 즈베레프',sc:'6–7(7), 7–6(2), 6–3, 6–4'},{t:'WTA',w:'린다 노스코바',r:'카롤리나 무호바',sc:'스코어 미수록'}],note:'시너의 윔블던 2연패이자 통산 다섯 번째 메이저 우승입니다.'},
+ {id:'can',name:'캐나다 오픈 (ATP)',en:'Canadian Open',city:'몬트리올',co:'캐나다',lat:45.5,lon:-73.57,s:'2026-08-02',e:'2026-08-13',lv:'1000',tour:'ATP',sf:'hard',res:[{t:'ATP',w:'벤 셸턴',r:'브랜던 나카시마',sc:'6–3, 7–6(4)'}]},
+ {id:'canw',name:'캐나다 오픈 (WTA)',en:'Canadian Open',city:'토론토',co:'캐나다',lat:43.65,lon:-79.38,s:'2026-08-02',e:'2026-08-13',lv:'1000',tour:'WTA',sf:'hard',res:[{t:'WTA',w:'이가 시비옹테크',r:'엘레나 리바키나',sc:'6–2, 6–3'}]},
+ {id:'cin',name:'신시내티 오픈',en:'Cincinnati Open',city:'메이슨(신시내티)',co:'미국',lat:39.36,lon:-84.31,s:'2026-08-13',e:'2026-08-24',lv:'1000',tour:'BOTH',sf:'hard',res:[{t:'ATP',w:'아르튀르 피스',r:'프랜시스 티아포',sc:'6–3, 1–6, 6–0'},{t:'WTA',w:'코코 고프',r:'제시카 페굴라',sc:'6–2, 6–4'}]},
+ {id:'uso',name:'US 오픈',en:'US Open',city:'뉴욕',co:'미국',lat:40.75,lon:-73.85,s:'2026-08-30',e:'2026-09-13',lv:'GS',tour:'BOTH',sf:'hard',res:[{t:'ATP',w:'알렉산더 즈베레프',r:'벤 셸턴',sc:'6–3, 7–6(2), 5–7, 6–2'},{t:'WTA',w:'엘레나 리바키나',r:'아리나 사발렌카',sc:'스코어 미수록'}],note:'즈베레프가 한 해에 첫 두 메이저를 모두 따낸 오픈 시대 네 번째 남자 선수가 됐습니다.'},
+ {id:'bei',name:'차이나 오픈 (WTA)',en:'China Open',city:'베이징',co:'중국',lat:39.9,lon:116.4,s:'2026-09-30',e:'2026-10-11',lv:'1000',tour:'WTA',sf:'hard',res:[]},
+ {id:'sha',name:'상하이 마스터스',en:'Shanghai Masters',city:'상하이',co:'중국',lat:31.23,lon:121.47,s:'2026-10-07',e:'2026-10-18',lv:'1000',tour:'ATP',sf:'hard',res:[]},
+ {id:'wuh',name:'우한 오픈',en:'Wuhan Open',city:'우한',co:'중국',lat:30.59,lon:114.3,s:'2026-10-12',e:'2026-10-18',lv:'1000',tour:'WTA',sf:'hard',res:[]},
+ {id:'par',name:'파리 마스터스',en:'Rolex Paris Masters',city:'파리',co:'프랑스',lat:48.84,lon:2.38,s:'2026-11-02',e:'2026-11-08',lv:'1000',tour:'ATP',sf:'hard',indoor:true,res:[]},
+ {id:'wtaf',name:'WTA 파이널스',en:'WTA Finals',city:'리야드',co:'사우디아라비아',lat:24.71,lon:46.68,s:'2026-11-01',e:'2026-11-08',lv:'Finals',tour:'WTA',sf:'hard',indoor:true,res:[],approx:true},
+ {id:'atpf',name:'ATP 파이널스',en:'Nitto ATP Finals',city:'토리노',co:'이탈리아',lat:45.07,lon:7.69,s:'2026-11-15',e:'2026-11-22',lv:'Finals',tour:'ATP',sf:'hard',indoor:true,res:[],approx:true},
+ {id:'dc',name:'데이비스컵 파이널 8',en:'Davis Cup Final 8',city:'볼로냐',co:'이탈리아',lat:44.49,lon:11.34,s:'2026-11-24',e:'2026-11-29',lv:'Team',tour:'ATP',sf:'hard',indoor:true,res:[],approx:true},
+];
+const LV = {GS:{ko:'그랜드슬램',r:9},Finals:{ko:'시즌 파이널',r:7.5},'1000':{ko:'1000',r:7},Team:{ko:'국가대항전',r:6},'500':{ko:'500',r:5.5},'250':{ko:'250',r:4.5}};
+const SF = {hard:'하드',clay:'클레이',grass:'잔디'};
+
+const PLAYERS = {
+ ATP:[
+  {rk:1,ko:'야닉 시너',en:'Jannik Sinner',co:'이탈리아',pts:11000,b:'2001-08-16',h:'오른손 · 양손 백핸드',gs:5,racket:'Head Speed 시리즈',style:'베이스라인에서 낮고 빠른 플랫성 스트로크로 주도권을 잡는 공격형.'},
+  {rk:2,ko:'알렉산더 즈베레프',en:'Alexander Zverev',co:'독일',pts:9630,b:'1997-04-20',h:'오른손 · 양손 백핸드',gs:2,racket:'Head Gravity 시리즈',style:'198cm 장신의 서브와 투어 정상급 양손 백핸드가 무기.'},
+  {rk:3,ko:'카를로스 알카라스',en:'Carlos Alcaraz',co:'스페인',pts:5060,b:'2003-05-05',h:'오른손 · 양손 백핸드',gs:7,racket:'Babolat Pure Aero 98',style:'폭발적인 포핸드와 드롭샷을 섞는 올코트 플레이어.'},
+  {rk:4,ko:'벤 셸턴',en:'Ben Shelton',co:'미국',pts:4680,b:'2002-10-09',h:'왼손 · 양손 백핸드',gs:0,racket:'—',style:'시속 230km를 넘나드는 왼손 서브가 최대 강점.'},
+  {rk:5,ko:'펠릭스 오제알리아심',en:'Félix Auger-Aliassime',co:'캐나다',pts:3890,b:'2000-08-08',h:'오른손 · 양손 백핸드',gs:0,racket:'—',style:'큰 서브와 포핸드를 바탕으로 한 실내 하드 강자.'},
+  {rk:6,ko:'다닐 메드베데프',en:'Daniil Medvedev',co:'러시아',pts:3860,b:'1996-02-11',h:'오른손 · 양손 백핸드',gs:1,racket:'Tecnifibre TF40',style:'베이스라인 뒤 깊은 위치에서 버티는 수비와 역습.'},
+  {rk:7,ko:'플라비오 코볼리',en:'Flavio Cobolli',co:'이탈리아',pts:3680,b:'2002-05-06',h:'오른손 · 양손 백핸드',gs:0,racket:'—',style:'클레이에서 강한 활동량 중심의 베이스라이너.'},
+  {rk:8,ko:'프랜시스 티아포',en:'Frances Tiafoe',co:'미국',pts:3380,b:'1998-01-20',h:'오른손 · 양손 백핸드',gs:0,racket:'—',style:'운동 능력과 쇼맨십, 네트 대시가 돋보이는 공격형.'},
+  {rk:9,ko:'아르튀르 피스',en:'Arthur Fils',co:'프랑스',pts:3150,b:'2004-06-12',h:'오른손 · 양손 백핸드',gs:0,racket:'—',style:'빠른 라켓 헤드 스피드에서 나오는 강력한 포핸드.'},
+  {rk:10,ko:'앨릭스 디미노어',en:'Alex de Minaur',co:'호주',pts:3150,b:'1999-02-17',h:'오른손 · 양손 백핸드',gs:0,racket:'—',style:'투어 최고 수준의 발 빠르기와 카운터펀치.'},
+ ],
+ WTA:[
+  {rk:1,ko:'엘레나 리바키나',en:'Elena Rybakina',co:'카자흐스탄',pts:9901,b:'1999-06-17',h:'오른손 · 양손 백핸드',gs:3,racket:'—',style:'간결한 폼에서 나오는 강서브와 플랫 스트로크.'},
+  {rk:2,ko:'아리나 사발렌카',en:'Aryna Sabalenka',co:'벨라루스',pts:7810,b:'1998-05-05',h:'오른손 · 양손 백핸드',gs:4,racket:'Wilson Blade 시리즈',style:'투어에서 가장 묵직한 볼을 치는 파워 베이스라이너.'},
+  {rk:3,ko:'제시카 페굴라',en:'Jessica Pegula',co:'미국',pts:7265,b:'1994-02-24',h:'오른손 · 양손 백핸드',gs:0,racket:'—',style:'라이징 볼을 일찍 잡아 각도를 만드는 하드 코트 강자.'},
+  {rk:4,ko:'코코 고프',en:'Coco Gauff',co:'미국',pts:7244,b:'2004-03-13',h:'오른손 · 양손 백핸드',gs:2,racket:'—',style:'뛰어난 수비 범위와 백핸드, 강한 서브.'},
+  {rk:5,ko:'미라 안드레예바',en:'Mirra Andreeva',co:'러시아',pts:5841,b:'2007-04-29',h:'오른손 · 양손 백핸드',gs:1,racket:'—',style:'10대에 톱5에 오른 전술 감각이 뛰어난 올라운더.'},
+  {rk:6,ko:'린다 노스코바',en:'Linda Nosková',co:'체코',pts:5328,b:'2004-11-17',h:'오른손 · 양손 백핸드',gs:1,racket:'—',style:'빠른 템포의 공격적인 그라운드 스트로크.'},
+  {rk:7,ko:'엘리나 스비톨리나',en:'Elina Svitolina',co:'우크라이나',pts:4809,b:'1994-09-12',h:'오른손 · 양손 백핸드',gs:0,racket:'—',style:'안정적인 랠리와 경험에서 나오는 경기 운영.'},
+  {rk:8,ko:'카롤리나 무호바',en:'Karolína Muchová',co:'체코',pts:4683,b:'1996-08-21',h:'오른손 · 양손 백핸드',gs:0,racket:'—',style:'슬라이스와 네트 플레이를 섞는 다채로운 스타일.'},
+  {rk:9,ko:'이가 시비옹테크',en:'Iga Świątek',co:'폴란드',pts:4119,b:'2001-05-31',h:'오른손 · 양손 백핸드',gs:6,racket:'Tecnifibre',style:'헤비 톱스핀 포핸드로 클레이를 지배해 온 전 세계 1위.'},
+  {rk:10,ko:'마르타 코스튜크',en:'Marta Kostyuk',co:'우크라이나',pts:4040,b:'2002-06-28',h:'오른손 · 양손 백핸드',gs:0,racket:'—',style:'공격적인 리턴과 빠른 발.'},
+ ]
+};
+
+const HISTORY = [
+ {y:'1874',t:'월터 윙필드, 론테니스 특허',d:'영국 육군 소령 윙필드가 ‘스파이리스티케’라는 이름으로 잔디 위 테니스 세트를 판매했습니다. 리얼 테니스에서 갈라져 나온 현대 테니스의 출발점입니다.'},
+ {y:'1877',t:'제1회 윔블던',d:'올잉글랜드 클럽이 첫 챔피언십을 열었습니다. 15-30-40 점수 체계와 코트 규격이 이때 자리 잡았습니다.',big:true},
+ {y:'1881',t:'US 내셔널 챔피언십 시작',d:'오늘날 US 오픈의 전신. 1978년 플러싱 메도스로 옮기며 하드 코트가 됐습니다.'},
+ {y:'1891',t:'프랑스 선수권 시작',d:'초기에는 프랑스 클럽 회원만 출전할 수 있었고, 1925년 국제 대회로 개방됐습니다. 1928년 롤랑가로스 경기장이 문을 열었습니다.'},
+ {y:'1900',t:'데이비스컵 창설',d:'미국과 영국의 대항전으로 시작한 남자 국가대항전. 여자 대회(현 빌리 진 킹 컵)는 1963년에 생겼습니다.'},
+ {y:'1905',t:'오스트랄라시아 선수권',d:'호주 오픈의 전신. 1988년 멜버른 파크로 옮기며 잔디에서 하드 코트로 바뀌었습니다.'},
+ {y:'1938',t:'돈 버지, 최초의 캘린더 그랜드슬램',d:'한 해 4대 메이저를 모두 우승. 이후 남자는 로드 레이버(1962, 1969)만이 같은 기록을 세웠습니다.'},
+ {y:'1968',t:'오픈 시대 개막',d:'프로 선수의 메이저 출전이 허용되면서 아마추어와 프로가 한 무대에 섰습니다.',big:true},
+ {y:'1972–73',t:'ATP·WTA 창설과 컴퓨터 랭킹',d:'1972년 ATP, 1973년 빌리 진 킹 주도로 WTA가 생겼고 1973년 ATP 컴퓨터 랭킹이 도입됐습니다. 같은 해 US 오픈은 남녀 동일 상금을 처음 지급했습니다.'},
+ {y:'1988',t:'슈테피 그라프의 골든 슬램',d:'4대 메이저와 서울 올림픽 금메달을 한 해에 모두 차지했습니다. 테니스가 올림픽 정식 종목으로 돌아온 해이기도 합니다.',big:true},
+ {y:'2006',t:'호크아이 챌린지 도입',d:'마이애미와 US 오픈에서 전자 판독 챌린지가 시작돼 판정 문화가 바뀌었습니다.'},
+ {y:'2022',t:'메이저 마지막 세트 10점 타이브레이크 통일',d:'4대 메이저가 마지막 세트 6–6에서 10점 타이브레이크로 승부를 가리는 규칙을 공통 적용했습니다.'},
+ {y:'2025',t:'윔블던, 선심 대신 전자 라인 판정',d:'148년 만에 모든 코트의 라인 판정을 자동화 시스템으로 바꿨습니다.'},
+ {y:'2026',t:'알카라스 최연소 커리어 그랜드슬램',d:'호주 오픈 우승으로 22세에 4대 메이저를 모두 제패했습니다. 같은 해 즈베레프는 롤랑가로스와 US 오픈을 연달아 차지했습니다.',big:true},
+];
+const RECORDS = [
+ ['남','노바크 조코비치','세르비아',24],['남','라파엘 나달','스페인',22],['남','로저 페더러','스위스',20],
+ ['여','마거릿 코트','호주',24],['여','세리나 윌리엄스','미국',23],['여','슈테피 그라프','독일',22],
+];
+const SLAMS = [
+ {n:'호주 오픈',sf:'hard',d:'1월 · 멜버른 · 1905년 시작 · 하드(GreenSet)'},
+ {n:'롤랑가로스',sf:'clay',d:'5–6월 · 파리 · 1891년 시작 · 붉은 클레이'},
+ {n:'윔블던',sf:'grass',d:'6–7월 · 런던 · 1877년 시작 · 잔디, 흰색 복장 규정'},
+ {n:'US 오픈',sf:'hard',d:'8–9월 · 뉴욕 · 1881년 시작 · 하드(Laykold)'},
+];
+const RACKETS = [
+ {m:'Babolat Pure Aero 98',h:98,w:305,p:'16×20',who:'카를로스 알카라스'},
+ {m:'Babolat Pure Drive',h:100,w:300,p:'16×19',who:''},
+ {m:'Head Speed MP',h:100,w:300,p:'16×19',who:'야닉 시너 (Speed 시리즈)'},
+ {m:'Head Speed Pro',h:100,w:310,p:'18×20',who:'노바크 조코비치 (Speed 시리즈)'},
+ {m:'Head Gravity Pro',h:100,w:315,p:'18×20',who:'알렉산더 즈베레프 (Gravity 시리즈)'},
+ {m:'Wilson Pro Staff 97',h:97,w:315,p:'16×19',who:''},
+ {m:'Wilson Blade 98 16×19',h:98,w:305,p:'16×19',who:'아리나 사발렌카 (Blade 시리즈)'},
+ {m:'Wilson Clash 100',h:100,w:295,p:'16×19',who:''},
+ {m:'Yonex EZONE 98',h:98,w:305,p:'16×19',who:''},
+ {m:'Yonex VCORE 98',h:98,w:305,p:'16×19',who:''},
+ {m:'Tecnifibre TF40 305',h:98,w:305,p:'16×19',who:'다닐 메드베데프'},
+];
+const STRINGS = [
+ {t:'폴리에스터 (모노)',ex:'Luxilon ALU Power, Babolat RPM Blast, Solinco Hyper-G',p:2,c:5,s:5,cf:1,d:5,note:'투어 선수 대부분이 사용. 텐션이 빨리 떨어져 자주 교체해야 합니다.'},
+ {t:'내추럴 거트',ex:'Babolat VS Touch, Luxilon Natural Gut',p:5,c:3,s:3,cf:5,d:2,note:'소 장 섬유로 만든 최고급 줄. 텐션 유지력이 가장 좋고 비쌉니다.'},
+ {t:'멀티필라멘트',ex:'Wilson NXT, Tecnifibre X-One Biphase',p:4,c:3,s:2,cf:4,d:2,note:'수백 가닥 섬유를 꼬아 거트에 가까운 타구감. 팔꿈치 부담이 적습니다.'},
+ {t:'신세틱 거트',ex:'Prince Synthetic Gut, Gamma Synthetic Gut',p:3,c:3,s:2,cf:3,d:3,note:'나일론 단일 코어. 저렴하고 무난한 입문용.'},
+ {t:'하이브리드',ex:'메인 폴리 + 크로스 거트 (예: 페더러 셋업)',p:4,c:4,s:4,cf:4,d:4,note:'세로줄과 가로줄에 다른 소재를 써서 장점을 섞는 방식.'},
+];
+
+/* ---------- helpers ---------- */
+const $ = s => document.querySelector(s);
+const el = (tag, attrs={}, html='') => { const n=document.createElementNS(tag==='svg'||['g','path','circle','rect','text','line','title'].includes(tag)?'http://www.w3.org/2000/svg':'http://www.w3.org/1999/xhtml', tag); for(const k in attrs) n.setAttribute(k, attrs[k]); if(html) n.innerHTML=html; return n; };
+const d = s => new Date(s+'T12:00:00');
+const fmt = s => { const x=d(s); return `${x.getMonth()+1}.${x.getDate()}`; };
+const status = t => TODAY < d(t.s) ? 'up' : (TODAY > d(t.e) ? 'done' : 'live');
+const ST_KO = {done:'완료',live:'진행 중',up:'예정'};
+const months = t => { const a=d(t.s).getMonth(), b=d(t.e).getMonth(); const r=[]; for(let m=a;m<=b;m++) r.push(m); return r; };
+const surnameKey = name => name;
+
+function project(lon, lat){
+  const A1=1.340264,A2=-0.081106,A3=0.000893,A4=0.003796,M=Math.sqrt(3)/2;
+  const lam=lon*Math.PI/180, phi=lat*Math.PI/180;
+  const l=Math.asin(M*Math.sin(phi)), l2=l*l, l6=l2*l2*l2;
+  const x=lam*Math.cos(l)/(M*(A1+3*A2*l2+l6*(7*A3+9*A4*l2)));
+  const y=l*(A1+A2*l2+l6*(A3+A4*l2));
+  return [MAPP.t[0]+MAPP.s*x, MAPP.t[1]-MAPP.s*y];
+}
+
+/* ---------- state ---------- */
+const S = {tour:'all', month:null, sel:'uso', region:'world', vb:[0,0,1000,470]};
+
+/* ---------- scoreboard ---------- */
+(function(){
+  const slams = ['ao','rg','wim','uso'].map(id=>T.find(t=>t.id===id));
+  $('#board').innerHTML = slams.map(t=>`<div>
+    <span class="slam"><i class="dot ${t.sf}"></i>${t.name.replace(' (프랑스 오픈)','')}</span>
+    <span class="w">${t.res[0].w} <small>ATP</small></span>
+    <span class="w">${t.res[1].w} <small>WTA</small></span>
+  </div>`).join('');
+})();
+
+/* ---------- month bar ---------- */
+function filtered(){
+  return T.filter(t => S.tour==='all' || t.tour==='BOTH' || t.tour===S.tour);
+}
+function renderMonths(){
+  const box=$('#months'); box.innerHTML='';
+  const all=el('button',{type:'button',class:'all','aria-pressed':String(S.month===null),id:'m-all'},'전체');
+  all.onclick=()=>{stopPlay();S.month=null;renderAll();};
+  box.appendChild(all);
+  const list=filtered();
+  const maxN=Math.max(...Array.from({length:12},(_,m)=>list.filter(t=>months(t).includes(m)).length),1);
+  for(let m=0;m<12;m++){
+    const ev=list.filter(t=>months(t).includes(m));
+    const b=el('button',{type:'button','aria-pressed':String(S.month===m),id:'m-'+m,'aria-label':`${m+1}월, 대회 ${ev.length}개`});
+    const bars=el('span',{class:'bars'});
+    ['hard','clay','grass'].forEach(sf=>{
+      const n=ev.filter(t=>t.sf===sf).length;
+      if(n){const i=document.createElement('i');i.style.height=(n/maxN*44-1)+'px';i.style.background=`var(--${sf})`;bars.appendChild(i);}
+    });
+    b.appendChild(bars);
+    const lab=el('span',{class:'m'+(m===TODAY.getMonth()?' now':'')},String(m+1).padStart(2,'0'));
+    b.appendChild(lab);
+    b.onclick=()=>{stopPlay();S.month=m;renderAll();};
+    box.appendChild(b);
+  }
+}
+
+/* ---------- map ---------- */
+const REG = {world:null, eu:[-12,24,58,60], am:[-125,-42,-45,56], ap:[95,-46,178,45]};
+function regionVB(r){
+  if(!REG[r]) return [0,0,1000,470];
+  const [lo1,la1,lo2,la2]=REG[r]; const pts=[];
+  for(const lo of [lo1,(lo1+lo2)/2,lo2]) for(const la of [la1,la2]) pts.push(project(lo,la));
+  let x0=Math.min(...pts.map(p=>p[0])), x1=Math.max(...pts.map(p=>p[0])), y0=Math.min(...pts.map(p=>p[1])), y1=Math.max(...pts.map(p=>p[1]));
+  let w=x1-x0, h=y1-y0; const ar=1000/470;
+  if(w/h<ar){const nw=h*ar; x0-=(nw-w)/2; w=nw;} else {const nh=w/ar; y0-=(nh-h)/2; h=nh;}
+  return [x0,y0,w,h];
+}
+let anim;
+function zoomTo(r){
+  const from=S.vb.slice(), to=regionVB(r), t0=performance.now(), dur=matchMedia('(prefers-reduced-motion: reduce)').matches?0:550;
+  cancelAnimationFrame(anim);
+  const step=now=>{
+    const k=dur?Math.min(1,(now-t0)/dur):1, e=1-Math.pow(1-k,3);
+    S.vb=from.map((v,i)=>v+(to[i]-v)*e);
+    $('#map').setAttribute('viewBox',S.vb.join(' '));
+    renderMarkers();
+    if(k<1) anim=requestAnimationFrame(step);
+  };
+  anim=requestAnimationFrame(step);
+}
+function shape(sf, x, y, r){
+  if(sf==='hard') return el('circle',{class:'shape',cx:x,cy:y,r,fill:`var(--hard)`});
+  if(sf==='clay') return el('rect',{class:'shape',x:x-r*.88,y:y-r*.88,width:r*1.76,height:r*1.76,fill:`var(--clay)`});
+  return el('path',{class:'shape',d:`M${x} ${y-r*1.15}L${x+r*1.15} ${y}L${x} ${y+r*1.15}L${x-r*1.15} ${y}Z`,fill:`var(--grass)`});
+}
+function renderMarkers(){
+  const g=$('#markers'); g.innerHTML='';
+  const k=S.vb[2]/1000;
+  const list=filtered().filter(t=>S.month===null||months(t).includes(S.month))
+    .sort((a,b)=>LV[a.lv].r-LV[b.lv].r || (a.id===S.sel)-(b.id===S.sel));
+  const seen={};
+  list.forEach(t=>{
+    let [x,y]=project(t.lon,t.lat);
+    const key=t.city; seen[key]=(seen[key]||0)+1;
+    if(seen[key]>1){x+=(seen[key]-1)*9*k; y-=(seen[key]-1)*4*k;}
+    const r=LV[t.lv].r*k, st=status(t);
+    const m=el('g',{class:`mk ${st}${t.id===S.sel?' sel':''}`,tabindex:'0',role:'button','aria-label':`${t.name}, ${t.city}, ${ST_KO[st]}`});
+    if(st==='live') m.appendChild(el('circle',{class:'ring',cx:x,cy:y,r:r*1.6,'stroke-width':2*k}));
+    const sh=shape(t.sf,x,y,r); sh.setAttribute('stroke-width',(st==='up'?2:1.2)*k);
+    if(st==='up') sh.setAttribute('stroke',`var(--${t.sf})`);
+    m.appendChild(sh);
+    m.addEventListener('click',()=>{S.sel=t.id;renderAll(false);});
+    m.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();S.sel=t.id;renderAll(false);}});
+    m.addEventListener('mouseenter',()=>showTip(t,x,y));
+    m.addEventListener('mouseleave',()=>{$('#tip').hidden=true;});
+    g.appendChild(m);
+  });
+}
+function showTip(t,x,y){
+  const svg=$('#map').getBoundingClientRect(), box=$('#mapbox').getBoundingClientRect();
+  const px=(x-S.vb[0])/S.vb[2]*svg.width + (svg.left-box.left), py=(y-S.vb[1])/S.vb[3]*svg.height + (svg.top-box.top);
+  const tip=$('#tip'); tip.hidden=false;
+  const w=t.res[0]?` · 우승 ${t.res.map(r=>r.w).join(', ')}`:'';
+  tip.textContent=`${t.name} · ${fmt(t.s)}–${fmt(t.e)}${w}`;
+  tip.style.left=Math.max(80,Math.min(box.width-80,px))+'px'; tip.style.top=py+'px';
+}
+
+/* ---------- list + detail ---------- */
+function renderList(){
+  const list=filtered().filter(t=>S.month===null||months(t).includes(S.month)).sort((a,b)=>d(a.s)-d(b.s));
+  $('#listTitle').textContent = S.month===null ? '2026 전체 시즌' : `${S.month+1}월 대회`;
+  const done=list.filter(t=>status(t)==='done').length;
+  $('#listCount').textContent = list.length ? `${list.length}개 대회 · 완료 ${done} · 진행/예정 ${list.length-done}` : '';
+  const ul=$('#evlist'); ul.innerHTML='';
+  if(!list.length){
+    ul.innerHTML=`<li class="empty">${S.month===11?'12월은 투어 오프시즌입니다. 선수들은 다음 시즌 호주 일정에 맞춰 체력 훈련에 들어갑니다.':'선택한 조건에 해당하는 수록 대회가 없습니다. 투어 필터를 ‘전체’로 바꿔 보세요.'}</li>`;
+    return;
+  }
+  list.forEach(t=>{
+    const st=status(t);
+    const li=document.createElement('li');
+    li.innerHTML=`<button type="button" class="${t.id===S.sel?'sel':''}"><i class="dot ${t.sf}"></i><span><span class="nm">${t.name}</span><br><span class="sub mono">${fmt(t.s)}–${fmt(t.e)}${t.approx?' (예정)':''}</span> <span class="sub">· ${t.city} · ${LV[t.lv].ko}</span></span><span class="st ${st}">${ST_KO[st]}</span></button>`;
+    li.firstChild.onclick=()=>{S.sel=t.id;renderAll(false);};
+    ul.appendChild(li);
+  });
+}
+function renderDetail(){
+  const t=T.find(x=>x.id===S.sel); const box=$('#detail');
+  if(!t){box.innerHTML='<p class="empty" style="padding:0">지도나 목록에서 대회를 선택하세요.</p>';return;}
+  const st=status(t);
+  const res = t.res.length ? `<div class="res">${t.res.map(r=>`<span class="tour">${r.t}</span><span>🏆 <b>${r.w}</b> <span class="ex">d.</span> ${r.r}</span><span class="score">${r.sc}</span>`).join('')}</div>`
+    : `<p class="ex">${st==='live'?'현재 진행 중입니다. 결승 결과는 대회 종료 후 반영됩니다.':'아직 열리지 않은 대회입니다.'}${t.approx?' 날짜는 예정 기준이며 바뀔 수 있습니다.':''}</p>`;
+  box.innerHTML=`<p class="eyebrow">${t.en}</p><h4>${t.name}</h4>
+   <div class="meta"><span class="st ${st}">${ST_KO[st]}</span><span class="chip mono">${fmt(t.s)} – ${fmt(t.e)}</span><span class="chip"><i class="dot ${t.sf}"></i>${SF[t.sf]}${t.indoor?' · 실내':''}</span><span class="chip">${t.tour==='BOTH'?'ATP·WTA':t.tour} ${LV[t.lv].ko}</span><span class="chip">${t.city}, ${t.co}</span></div>
+   ${res}${t.note?`<p class="ex">${t.note}</p>`:''}`;
+}
+function renderAll(full=true){
+  if(full){
+    const list=filtered().filter(t=>S.month===null||months(t).includes(S.month));
+    if(!list.find(t=>t.id===S.sel)) S.sel = list.length ? (list.find(t=>status(t)!=='up')||list[0]).id : null;
+  }
+  renderMonths(); renderMarkers(); renderList(); renderDetail();
+}
+function segInit(id, key, cb){
+  document.querySelectorAll(`#${id} button`).forEach(b=>b.onclick=()=>{
+    document.querySelectorAll(`#${id} button`).forEach(x=>x.setAttribute('aria-pressed',String(x===b)));
+    S[key]=b.dataset.v; cb&&cb(b.dataset.v);
+  });
+}
+segInit('tourSeg','tour',()=>renderAll());
+segInit('regionSeg','region',r=>zoomTo(r));
+
+let playT=null;
+function stopPlay(){ if(playT){clearInterval(playT);playT=null;$('#play').textContent='▶ 월별 재생';} }
+$('#play').onclick=()=>{
+  if(playT){stopPlay();return;}
+  $('#play').textContent='❚❚ 정지';
+  S.month = S.month===null||S.month===11 ? 0 : S.month+1; renderAll();
+  playT=setInterval(()=>{ if(S.month>=11){stopPlay();return;} S.month++; renderAll(); },1600);
+};
+
+/* ---------- history ---------- */
+$('#timeline').innerHTML = HISTORY.map(h=>`<li class="${h.big?'big':''}"><div class="yr">${h.y}</div><h3>${h.t}</h3><p>${h.d}</p></li>`).join('');
+$('#recTable').innerHTML = `<thead><tr><th></th><th>선수</th><th>국가</th><th class="n">우승</th></tr></thead><tbody>${RECORDS.map(r=>`<tr><td class="ex">${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td><td class="n">${r[3]}</td></tr>`).join('')}</tbody>`;
+$('#slam4').innerHTML = SLAMS.map(s=>`<div><b><i class="dot ${s.sf}"></i>${s.n}</b><span class="ex">${s.d}</span></div>`).join('');
+
+/* ---------- rackets ---------- */
+let rSel=null, rFilter='all';
+function racketsShown(){ return RACKETS.filter(r=>rFilter==='all'||(rFilter==='small'?r.h<100:r.h>=100)); }
+function renderRackets(){
+  const svg=$('#scatter'); svg.innerHTML='';
+  const W=520,H=330,L=48,R=16,Tp=16,B=40;
+  const xs=[290,320], ys=[96,101];
+  const X=v=>L+(v-xs[0])/(xs[1]-xs[0])*(W-L-R), Y=v=>Tp+(ys[1]-v)/(ys[1]-ys[0])*(H-Tp-B);
+  for(let v=290;v<=320;v+=5){ svg.appendChild(el('line',{class:'grid',x1:X(v),x2:X(v),y1:Tp,y2:H-B})); svg.appendChild(el('text',{x:X(v),y:H-B+16,'text-anchor':'middle'},v)); }
+  for(const v of [97,98,99,100]){ svg.appendChild(el('line',{class:'grid',x1:L,x2:W-R,y1:Y(v),y2:Y(v)})); svg.appendChild(el('text',{x:L-8,y:Y(v)+4,'text-anchor':'end'},v)); }
+  svg.appendChild(el('text',{x:(L+W-R)/2,y:H-6,'text-anchor':'middle'},'무게 (g, 언스트렁)'));
+  svg.appendChild(el('text',{x:12,y:Tp+(H-Tp-B)/2,'text-anchor':'middle',transform:`rotate(-90 12 ${Tp+(H-Tp-B)/2})`},'헤드 (in²)'));
+  const shown=racketsShown();
+  const groups={};
+  shown.forEach(r=>{ const k=r.w+'-'+r.h; (groups[k]=groups[k]||[]).push(r); });
+  Object.values(groups).forEach(g=>{
+    g.forEach((r,i)=>{
+      const cx=X(r.w)+(i-(g.length-1)/2)*14, cy=Y(r.h);
+      const c=el('circle',{class:'pt'+(rSel===r.m?' hl':''),cx,cy,r:7,tabindex:'0',role:'button','aria-label':`${r.m}, ${r.w}g, ${r.h}제곱인치, ${r.p}`});
+      c.appendChild(el('title',{},`${r.m} · ${r.w}g · ${r.h}in² · ${r.p}`));
+      c.onclick=()=>{rSel=rSel===r.m?null:r.m;renderRackets();};
+      c.onkeydown=e=>{if(e.key==='Enter'){rSel=rSel===r.m?null:r.m;renderRackets();}};
+      svg.appendChild(c);
+    });
+    const lab=g.length>1?`${g.length}개 모델`:g[0].m.replace(/ 16×19$/,'');
+    const x0=X(g[0].w), anchor=x0>W-130?'end':'start';
+    svg.appendChild(el('text',{class:'lbl',x:anchor==='end'?x0-10-(g.length-1)*7:x0+10+(g.length-1)*7,y:Y(g[0].h)-10,'text-anchor':anchor},lab));
+  });
+  $('#racketTable').innerHTML=`<thead><tr><th>모델</th><th class="n">헤드</th><th class="n">무게</th><th>패턴</th><th>사용 선수(계열)</th></tr></thead><tbody>${shown.map(r=>`<tr class="${rSel===r.m?'hl':''}"><td>${r.m}</td><td class="n">${r.h}</td><td class="n">${r.w}g</td><td class="mono">${r.p}</td><td class="ex">${r.who||'—'}</td></tr>`).join('')}</tbody>`;
+}
+document.querySelectorAll('#headSeg button').forEach(b=>b.onclick=()=>{
+  document.querySelectorAll('#headSeg button').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));
+  rFilter=b.dataset.v; renderRackets();
+});
+renderRackets();
+
+/* ---------- strings ---------- */
+const pips=n=>`<span class="pips" aria-label="${n}점">${[1,2,3,4,5].map(i=>`<i class="${i<=n?'on':''}"></i>`).join('')}</span>`;
+$('#stringTable').innerHTML=`<thead><tr><th>소재</th><th>파워</th><th>컨트롤</th><th>스핀</th><th>편안함</th><th>내구성</th></tr></thead><tbody>${STRINGS.map(s=>`<tr><td><b>${s.t}</b><div class="ex">${s.ex}</div><div class="ex" style="margin-top:4px">${s.note}</div></td><td>${pips(s.p)}</td><td>${pips(s.c)}</td><td>${pips(s.s)}</td><td>${pips(s.cf)}</td><td>${pips(s.d)}</td></tr>`).join('')}</tbody>`;
+function renderTension(){
+  const kg=parseFloat($('#tension').value), lb=kg*2.20462;
+  $('#tKg').innerHTML=`${kg.toFixed(1).replace('.0','')}<small>kg</small>`;
+  $('#tLb').innerHTML=`${lb.toFixed(1)}<small>lbs</small>`;
+  $('#tMark').style.left=((kg-18)/12*100)+'%';
+  $('#tAdvice').textContent = kg<22 ? '낮은 텐션: 공이 줄에 오래 머물러 반발력이 크고 팔 부담이 적습니다. 폴리 스트링을 낮게 매는 투어 선수가 늘고 있습니다.'
+    : kg<=26 ? '표준 범위: 대부분의 동호인과 프로가 쓰는 구간입니다. 폴리는 이 범위의 아래쪽, 멀티·거트는 위쪽이 일반적입니다.'
+    : '높은 텐션: 타구가 단단하고 방향 통제가 쉬워지지만 반발력이 줄고 팔꿈치 부담이 커집니다.';
+}
+$('#tension').addEventListener('input',renderTension); renderTension();
+
+/* ---------- players ---------- */
+let pTour='ATP', pSel=null;
+const age=b=>{const x=d(b);let a=TODAY.getFullYear()-x.getFullYear();if(TODAY<new Date(TODAY.getFullYear(),x.getMonth(),x.getDate()))a--;return a;};
+function finals(p){
+  const out=[];
+  T.forEach(t=>t.res.forEach(r=>{ if(r.w===p.ko) out.push({t,won:true,o:r.r,sc:r.sc}); else if(r.r===p.ko) out.push({t,won:false,o:r.w,sc:r.sc}); }));
+  return out.sort((a,b)=>d(a.t.s)-d(b.t.s));
+}
+function renderPlayers(){
+  const ps=PLAYERS[pTour];
+  if(!ps.find(p=>p.ko===pSel)) pSel=ps[0].ko;
+  $('#playerGrid').innerHTML=ps.map(p=>{
+    const f=finals(p), w=f.filter(x=>x.won).length;
+    return `<button type="button" class="pc" aria-pressed="${p.ko===pSel}" data-k="${p.ko}">
+      <div class="ptop"><div><h3>${p.ko}</h3><div class="en">${p.en} · ${p.co}</div></div><div class="rank">${p.rk}</div></div>
+      <div class="kv"><span>포인트<b>${p.pts.toLocaleString()}</b></span><span>2026 우승<b>${w}</b></span><span>메이저<b>${p.gs}</b></span></div>
+    </button>`;}).join('');
+  document.querySelectorAll('.pc').forEach(b=>b.onclick=()=>{pSel=b.dataset.k;renderPlayers();});
+  const p=ps.find(x=>x.ko===pSel), f=finals(p);
+  $('#pdetail').innerHTML=`<div>
+      <p class="eyebrow">세계 ${p.rk}위 · ${pTour}</p><h3>${p.ko}</h3><p class="ex">${p.en}</p>
+      <p style="margin-top:10px;max-width:52ch">${p.style}</p>
+      <dl class="facts">
+        <div><dt>국가</dt><dd>${p.co}</dd></div>
+        <div><dt>나이</dt><dd class="num">${age(p.b)}세 <span class="ex">(${p.b.replaceAll('-','.')})</span></dd></div>
+        <div><dt>플레이</dt><dd>${p.h}</dd></div>
+        <div><dt>랭킹 포인트</dt><dd class="num">${p.pts.toLocaleString()}</dd></div>
+        <div><dt>통산 메이저 단식</dt><dd class="num">${p.gs}회</dd></div>
+        <div><dt>라켓</dt><dd>${p.racket}</dd></div>
+      </dl>
+    </div>
+    <div class="tablebox">
+      <p class="eyebrow" style="margin-bottom:6px">2026 결승 기록 (수록 대회)</p>
+      ${f.length?`<table><thead><tr><th>대회</th><th>결과</th><th>상대</th><th>스코어</th></tr></thead><tbody>${f.map(x=>`<tr><td><i class="dot ${x.t.sf}"></i> ${x.t.name} <span class="ex mono">${fmt(x.t.e)}</span></td><td>${x.won?'<b>우승</b>':'준우승'}</td><td>${x.o}</td><td class="mono ex">${x.sc}</td></tr>`).join('')}</tbody></table>`:'<p class="ex">이 사이트에 수록된 2026 대회 결승 기록이 없습니다.</p>'}
+    </div>`;
+  renderPts();
+}
+document.querySelectorAll('#pSeg button').forEach(b=>b.onclick=()=>{
+  document.querySelectorAll('#pSeg button').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));
+  pTour=b.dataset.v; renderPlayers();
+});
+
+/* ---------- stats ---------- */
+function hbars(box, rows, max, ticks, unit){
+  box.innerHTML = rows.map(r=>`<div class="hb${r.me?' me':''}" title="${r.tip}"><span class="nm">${r.n}</span><span class="track"><span class="fill" style="width:${Math.max(.5,r.v/max*100)}%"></span></span><span class="v">${r.v.toLocaleString()}${unit}</span></div>`).join('')
+   + `<div class="axis"><span></span><div>${ticks.map(t=>`<span>${t.toLocaleString()}</span>`).join('')}</div><span></span></div>`;
+}
+function renderPts(){
+  const ps=PLAYERS[pTour];
+  $('#ptsTitle').textContent=`${pTour} 랭킹 포인트`;
+  const max=12000;
+  hbars($('#ptsChart'), ps.map(p=>({n:`${p.rk}. ${p.ko}`,v:p.pts,me:p.ko===pSel,tip:`${p.ko} · ${p.co} · ${p.pts.toLocaleString()}점`})), max, [0,3000,6000,9000,12000], '');
+}
+(function(){
+  const c={};
+  T.forEach(t=>t.res.forEach(r=>{ if(r.t!=='혼성') { const k=r.w; c[k]=c[k]||{n:k,v:0,ev:[],tour:r.t}; c[k].v++; c[k].ev.push(t.name); } }));
+  const rows=Object.values(c).sort((a,b)=>b.v-a.v||a.n.localeCompare(b.n)).slice(0,10);
+  hbars($('#titleChart'), rows.map(r=>({n:`${r.n}`,v:r.v,tip:`${r.n} (${r.tour}) · ${r.ev.join(', ')}`})), 6, [0,2,4,6], '회');
+  const all=[...PLAYERS.ATP.map(p=>({...p,t:'ATP'})),...PLAYERS.WTA.map(p=>({...p,t:'WTA'}))].filter(p=>p.gs>0).sort((a,b)=>b.gs-a.gs);
+  hbars($('#slamChart'), all.map(p=>({n:`${p.ko} (${p.t})`,v:p.gs,tip:`${p.ko} · 메이저 ${p.gs}회`})), 8, [0,2,4,6,8], '회');
+})();
+
+/* ---------- nav highlight ---------- */
+const secs=[...document.querySelectorAll('main section')];
+const navA=[...document.querySelectorAll('#nav a')];
+navA.forEach(a=>a.addEventListener('click',e=>{e.preventDefault();document.querySelector(a.getAttribute('href')).scrollIntoView({behavior:'smooth'});}));
+const io=new IntersectionObserver(es=>es.forEach(en=>{ if(en.isIntersecting){ navA.forEach(a=>a.classList.toggle('on',a.getAttribute('href')==='#'+en.target.id)); } }),{rootMargin:'-40% 0px -55% 0px'});
+secs.forEach(s=>io.observe(s));
+
+renderAll(); renderPlayers();
+</script>

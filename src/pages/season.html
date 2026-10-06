@@ -1,0 +1,206 @@
+<div class="page-head">
+  <p class="eyebrow">ATP &amp; WTA · as of October 5, 2026</p>
+  <h1>Season Map</h1>
+  <p>Pick a tournament on the map to see the final, or step through the year month by month. Marker shape shows the surface (● hard, ■ clay, ◆ grass), size shows the tier, hollow markers haven’t been played yet, and pulsing markers are in progress now.</p>
+</div>
+
+<section>
+  <div class="dash">
+    <div class="panel">
+      <div class="toolbar">
+        <div class="seg" id="tourSeg" role="group" aria-label="Tour">
+          <button id="t-all" aria-pressed="true" data-v="all">All</button>
+          <button id="t-atp" aria-pressed="false" data-v="ATP">ATP</button>
+          <button id="t-wta" aria-pressed="false" data-v="WTA">WTA</button>
+        </div>
+        <div class="seg" id="regionSeg" role="group" aria-label="Region">
+          <button id="r-world" aria-pressed="true" data-v="world">World</button>
+          <button id="r-eu" aria-pressed="false" data-v="eu">Europe &amp; Gulf</button>
+          <button id="r-am" aria-pressed="false" data-v="am">Americas</button>
+          <button id="r-ap" aria-pressed="false" data-v="ap">Asia-Pacific</button>
+        </div>
+        <div class="legend">
+          <span><i class="dot hard"></i>Hard</span>
+          <span><i class="dot clay"></i>Clay</span>
+          <span><i class="dot grass"></i>Grass</span>
+        </div>
+      </div>
+      <div class="mapbox" id="mapbox">
+        <svg id="map" viewBox="0 0 1000 470" role="img" aria-label="World map of 2026 tennis tournaments">
+          <path class="sphere" id="sphere"></path>
+          <path class="land" id="land"></path>
+          <g id="markers"></g>
+        </svg>
+        <div class="tip" id="tip" hidden></div>
+      </div>
+      <div class="months" id="months"></div>
+    </div>
+
+    <aside class="panel side" aria-live="polite">
+      <div style="display:flex;justify-content:space-between;align-items:center;padding-right:12px">
+        <h3 id="listTitle">Full season</h3>
+        <button class="play" id="play" type="button">▶ Play the year</button>
+      </div>
+      <p class="count" id="listCount"></p>
+      <ul class="evlist" id="evlist"></ul>
+      <div class="detail" id="detail"></div>
+    </aside>
+  </div>
+</section>
+
+<script>
+$('#sphere').setAttribute('d', MAP.sphere);
+$('#land').setAttribute('d', MAP.d);
+
+const S = {tour:'all', month:null, sel:'uso', vb:[0,0,1000,470]};
+const byFocus = (a,b) => LV[b.lv].r - LV[a.lv].r || d(a.e) - d(b.e);
+const LIVE = T.filter(t => status(t) === 'live').sort(byFocus);
+const hashT = T.find(t => t.id === location.hash.slice(1));
+if (hashT || LIVE[0]) S.sel = (hashT || LIVE[0]).id;
+
+const filtered = () => T.filter(t => S.tour === 'all' || t.tour === 'BOTH' || t.tour === S.tour);
+const inMonth = t => S.month === null || monthsOf(t).includes(S.month);
+
+function renderMonths(){
+  const box = $('#months'); box.innerHTML = '';
+  const all = el('button', {type:'button', class:'all', 'aria-pressed':String(S.month === null), id:'m-all'}, 'All');
+  all.onclick = () => { stopPlay(); S.month = null; renderAll(); };
+  box.appendChild(all);
+  const list = filtered();
+  const maxN = Math.max(...Array.from({length:12}, (_, m) => list.filter(t => monthsOf(t).includes(m)).length), 1);
+  for (let m = 0; m < 12; m++){
+    const ev = list.filter(t => monthsOf(t).includes(m));
+    const b = el('button', {type:'button', 'aria-pressed':String(S.month === m), id:'m-'+m, 'aria-label':`${MONTH[m]}, ${ev.length} tournaments`});
+    const bars = el('span', {class:'bars'});
+    ['hard','clay','grass'].forEach(sf => {
+      const n = ev.filter(t => t.sf === sf).length;
+      if (n){ const i = document.createElement('i'); i.style.height = (n/maxN*44 - 1) + 'px'; i.style.background = `var(--${sf})`; bars.appendChild(i); }
+    });
+    b.appendChild(bars);
+    b.appendChild(el('span', {class:'m' + (m === TODAY.getMonth() ? ' now' : '')}, MON[m]));
+    b.onclick = () => { stopPlay(); S.month = m; renderAll(); };
+    box.appendChild(b);
+  }
+}
+
+const REG = {world:null, eu:[-12,24,58,60], am:[-125,-42,-45,56], ap:[95,-46,178,45]};
+function regionVB(r){
+  if (!REG[r]) return [0,0,1000,470];
+  const [lo1,la1,lo2,la2] = REG[r]; const pts = [];
+  for (const lo of [lo1,(lo1+lo2)/2,lo2]) for (const la of [la1,la2]) pts.push(project(lo,la));
+  let x0 = Math.min(...pts.map(p=>p[0])), x1 = Math.max(...pts.map(p=>p[0])), y0 = Math.min(...pts.map(p=>p[1])), y1 = Math.max(...pts.map(p=>p[1]));
+  let w = x1-x0, h = y1-y0; const ar = 1000/470;
+  if (w/h < ar){ const nw = h*ar; x0 -= (nw-w)/2; w = nw; } else { const nh = w/ar; y0 -= (nh-h)/2; h = nh; }
+  return [x0,y0,w,h];
+}
+let anim;
+function zoomTo(r){
+  const from = S.vb.slice(), to = regionVB(r), t0 = performance.now();
+  const dur = matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 550;
+  cancelAnimationFrame(anim);
+  const step = now => {
+    const k = dur ? Math.min(1, (now-t0)/dur) : 1, e = 1 - Math.pow(1-k, 3);
+    S.vb = from.map((v,i) => v + (to[i]-v)*e);
+    $('#map').setAttribute('viewBox', S.vb.join(' '));
+    renderMarkers();
+    if (k < 1) anim = requestAnimationFrame(step);
+  };
+  anim = requestAnimationFrame(step);
+}
+
+function renderMarkers(){
+  const g = $('#markers'); g.innerHTML = '';
+  const k = S.vb[2]/1000;
+  const list = filtered().filter(inMonth).sort((a,b) => LV[a.lv].r - LV[b.lv].r || (a.id === S.sel) - (b.id === S.sel));
+  const seen = {};
+  list.forEach(t => {
+    let [x,y] = project(t.lon, t.lat);
+    seen[t.city] = (seen[t.city] || 0) + 1;
+    if (seen[t.city] > 1){ x += (seen[t.city]-1)*9*k; y -= (seen[t.city]-1)*4*k; }
+    const r = LV[t.lv].r*k, st = status(t);
+    const m = el('g', {class:`mk ${st}${t.id === S.sel ? ' sel' : ''}`, tabindex:'0', role:'button', 'aria-label':`${t.name}, ${t.city}, ${ST[st]}`});
+    if (st === 'live') m.appendChild(el('circle', {class:'ring', cx:x, cy:y, r:r*1.6, 'stroke-width':2*k}));
+    const sh = surfaceShape(t.sf, x, y, r);
+    sh.setAttribute('stroke-width', (st === 'up' ? 2 : 1.2)*k);
+    if (st === 'up') sh.setAttribute('stroke', `var(--${t.sf})`);
+    m.appendChild(sh);
+    const pick = () => { S.sel = t.id; renderAll(false); };
+    m.addEventListener('click', pick);
+    m.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' '){ e.preventDefault(); pick(); } });
+    m.addEventListener('mouseenter', () => showTip(t, x, y));
+    m.addEventListener('mouseleave', () => { $('#tip').hidden = true; });
+    g.appendChild(m);
+  });
+}
+function showTip(t, x, y){
+  const svg = $('#map').getBoundingClientRect(), box = $('#mapbox').getBoundingClientRect();
+  const px = (x-S.vb[0])/S.vb[2]*svg.width + (svg.left-box.left), py = (y-S.vb[1])/S.vb[3]*svg.height + (svg.top-box.top);
+  const tip = $('#tip'); tip.hidden = false;
+  tip.textContent = `${t.name} · ${range(t)}` + (t.res[0] ? ` · Won by ${t.res.map(r => r.w).join(', ')}` : '');
+  tip.style.left = Math.max(80, Math.min(box.width-80, px)) + 'px'; tip.style.top = py + 'px';
+}
+
+function renderList(){
+  const list = filtered().filter(inMonth).sort((a,b) => d(a.s) - d(b.s));
+  $('#listTitle').textContent = S.month === null ? '2026 full season' : MONTH[S.month];
+  const done = list.filter(t => status(t) === 'done').length;
+  $('#listCount').textContent = list.length ? `${list.length} tournaments · ${done} completed · ${list.length-done} live or upcoming` : '';
+  const ul = $('#evlist'); ul.innerHTML = '';
+  if (!list.length){
+    ul.innerHTML = `<li class="empty">${S.month === 11 ? 'December is the off-season. Players rest and then start pre-season training for the Australian swing.' : 'No tournaments in this view. Set the tour filter to All to see more.'}</li>`;
+    return;
+  }
+  const live = list.filter(t => status(t) === 'live').sort(byFocus);
+  const rest = list.filter(t => status(t) !== 'live');
+  const head = (txt, cls) => { const h = document.createElement('li'); h.className = cls; h.textContent = txt; ul.appendChild(h); };
+  if (live.length) head('Now playing', 'livehead');
+  [...live, ...rest].forEach((t, i) => {
+    if (live.length && rest.length && i === live.length) head('Schedule', 'livehead sched');
+    const st = status(t), li = document.createElement('li');
+    li.innerHTML = `<button type="button" class="${t.id === S.sel ? 'sel' : ''}"><i class="dot ${t.sf}"></i><span><span class="nm">${t.name}</span><br><span class="sub mono">${range(t)}${t.approx ? ' (tentative)' : ''}</span> <span class="sub">· ${t.city} · ${LV[t.lv].n}</span></span><span class="st ${st}">${ST[st]}</span></button>`;
+    li.firstChild.onclick = () => { S.sel = t.id; renderAll(false); };
+    ul.appendChild(li);
+  });
+}
+function renderDetail(){
+  const t = T.find(x => x.id === S.sel), box = $('#detail');
+  if (!t){ box.innerHTML = '<p class="empty" style="padding:0">Pick a tournament on the map or in the list.</p>'; return; }
+  const st = status(t);
+  const res = t.res.length
+    ? `<div class="res">${t.res.map(r => `<span class="tour">${r.t}</span><span>🏆 <b>${r.w}</b> <span class="ex">d.</span> ${r.r}</span><span class="score">${r.sc}</span>`).join('')}</div>`
+    : `<p class="ex">${st === 'live' ? 'In progress now. The final will be added when the event ends.' : 'Not played yet.'}${t.approx ? ' Dates are tentative and may change.' : ''}</p>`;
+  box.innerHTML = `<p class="eyebrow">${t.city}, ${t.co}</p><h4>${t.name}</h4>
+    <div class="meta"><span class="st ${st}">${ST[st]}</span><span class="chip mono">${range(t)}</span><span class="chip"><i class="dot ${t.sf}"></i>${SF[t.sf]}${t.indoor ? ' · indoor' : ''}</span><span class="chip">${t.tour === 'BOTH' ? 'ATP & WTA' : t.tour} ${LV[t.lv].n}</span></div>
+    ${res}${t.note ? `<p class="ex">${t.note}</p>` : ''}${t.lv === 'GS' ? `<a class="slamlink" href="archive.html#${t.id}">${t.name} champions since 2000 →</a>` : ''}`;
+}
+function renderAll(full = true){
+  if (full){
+    const list = filtered().filter(inMonth);
+    if (!list.find(t => t.id === S.sel)) S.sel = list.length ? (list.filter(t => status(t) === 'live').sort(byFocus)[0] || list.find(t => status(t) !== 'up') || list[0]).id : null;
+  }
+  renderMonths(); renderMarkers(); renderList(); renderDetail();
+}
+segInit('tourSeg', v => { S.tour = v; renderAll(); });
+segInit('regionSeg', v => zoomTo(v));
+
+let playT = null;
+function stopPlay(){ if (playT){ clearInterval(playT); playT = null; $('#play').textContent = '▶ Play the year'; } }
+$('#play').onclick = () => {
+  if (playT){ stopPlay(); return; }
+  $('#play').textContent = '❚❚ Pause';
+  S.month = S.month === null || S.month === 11 ? 0 : S.month + 1; renderAll();
+  playT = setInterval(() => { if (S.month >= 11){ stopPlay(); return; } S.month++; renderAll(); }, 1600);
+};
+// Open focused on what is being played now: the current month, zoomed to the selected live event's region
+const selT = T.find(t => t.id === S.sel);
+if (status(selT) === 'live'){
+  S.month = TODAY.getMonth();
+  const [px, py] = project(selT.lon, selT.lat);
+  const reg = Object.keys(REG).find(r => { if (!REG[r]) return false; const [x,y,w,h] = regionVB(r); return px > x && px < x+w && py > y && py < y+h; });
+  if (reg){
+    S.vb = regionVB(reg); $('#map').setAttribute('viewBox', S.vb.join(' '));
+    document.querySelectorAll('#regionSeg button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.v === reg)));
+  }
+}
+renderAll();
+</script>

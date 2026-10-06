@@ -1,0 +1,59 @@
+<div class="page-head">
+  <p class="eyebrow">Materials, tension, gauge</p>
+  <h1>Strings</h1>
+  <p>Each material plays very differently. Ratings compare the materials against each other on a 1–5 scale.</p>
+</div>
+
+<section>
+  <div class="gear">
+    <div class="panel tablebox" style="padding:8px 14px">
+      <table id="stringTable"></table>
+    </div>
+    <div class="panel calc">
+      <div>
+        <p class="eyebrow">Tension converter</p>
+        <p class="ex" style="margin-top:4px">Most players string between 20 and 28 kg (about 44–62 lbs). Lower tension adds power; higher tension adds control.</p>
+      </div>
+      <div>
+        <label for="tension">Tension (kg)</label>
+        <input type="range" id="tension" min="18" max="30" step="0.5" value="24">
+      </div>
+      <div class="row">
+        <div class="big num" id="tKg">24<small>kg</small></div>
+        <div class="big num" id="tLb">52.9<small>lbs</small></div>
+      </div>
+      <div>
+        <div class="zone"><i id="tMark"></i></div>
+        <div class="zone-l"><span>Power &amp; comfort</span><span>Balanced</span><span>Control &amp; precision</span></div>
+      </div>
+      <p id="tAdvice" style="font-size:14px"></p>
+      <div class="tablebox">
+        <table>
+          <thead><tr><th>Gauge</th><th class="n">Thickness (mm)</th><th>What it does</th></tr></thead>
+          <tbody>
+            <tr><td>15L</td><td class="n">1.34–1.40</td><td>Most durable, least pop</td></tr>
+            <tr><td>16</td><td class="n">1.26–1.33</td><td>The common standard</td></tr>
+            <tr><td>16L / 17</td><td class="n">1.18–1.25</td><td>More spin and feel, breaks sooner</td></tr>
+            <tr><td>18</td><td class="n">1.06–1.17</td><td>Maximum spin and pop, least durable</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+const pips = n => `<span class="pips" aria-label="${n} of 5">${[1,2,3,4,5].map(i => `<i class="${i <= n ? 'on' : ''}"></i>`).join('')}</span>`;
+$('#stringTable').innerHTML = `<thead><tr><th>Material</th><th>Power</th><th>Control</th><th>Spin</th><th>Comfort</th><th>Durability</th></tr></thead><tbody>${STRINGS.map(s => `<tr><td><b>${s.t}</b><div class="ex">${s.ex}</div><div class="ex" style="margin-top:4px">${s.note}</div></td><td>${pips(s.p)}</td><td>${pips(s.c)}</td><td>${pips(s.s)}</td><td>${pips(s.cf)}</td><td>${pips(s.d)}</td></tr>`).join('')}</tbody>`;
+function renderTension(){
+  const kg = parseFloat($('#tension').value), lb = kg*2.20462;
+  $('#tKg').innerHTML = `${kg.toFixed(1).replace('.0','')}<small>kg</small>`;
+  $('#tLb').innerHTML = `${lb.toFixed(1)}<small>lbs</small>`;
+  $('#tMark').style.left = ((kg-18)/12*100) + '%';
+  $('#tAdvice').textContent = kg < 22 ? 'Low tension: the ball sits on the strings longer, giving more power and less arm shock. More tour players now string poly this low.'
+    : kg <= 26 ? 'Standard range: where most club players and pros string. Poly usually sits at the low end, multifilament and gut at the high end.'
+    : 'High tension: a firmer, more precise response, but less power and more strain on the elbow.';
+}
+$('#tension').addEventListener('input', renderTension);
+renderTension();
+</script>

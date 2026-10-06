@@ -1,0 +1,28 @@
+<div class="page-head">
+  <p class="eyebrow">1874 – 2026</p>
+  <h1>History</h1>
+  <p>From a garden-party game on English lawns to electronic line calling, these are the moments that shaped modern tennis.</p>
+</div>
+
+<section>
+  <div class="hist">
+    <ol class="tl" id="timeline"></ol>
+    <div style="display:flex;flex-direction:column;gap:16px">
+      <div class="panel rec">
+        <h3>Most Grand Slam singles titles</h3>
+        <div class="tablebox"><table id="recTable"></table></div>
+        <a class="slamlink" href="archive.html">Every Grand Slam champion since 2000 →</a>
+      </div>
+      <div class="panel rec">
+        <h3>The four majors</h3>
+        <div class="slam4" id="slam4"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+$('#timeline').innerHTML = HISTORY.map(h => `<li class="${h.big ? 'big' : ''}"><div class="yr">${h.y}</div><h3>${h.t}</h3><p>${h.d}</p></li>`).join('');
+$('#recTable').innerHTML = `<thead><tr><th></th><th>Player</th><th>Country</th><th class="n">Titles</th></tr></thead><tbody>${RECORDS.map(r => `<tr><td class="ex">${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td><td class="n">${r[3]}</td></tr>`).join('')}</tbody>`;
+$('#slam4').innerHTML = SLAMS.map(s => `<div><b><i class="dot ${s.sf}"></i>${s.n}</b><span class="ex">${s.d}</span></div>`).join('');
+</script>

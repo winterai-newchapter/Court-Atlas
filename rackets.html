@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Rackets · Court Atlas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;800&family=Public+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<link rel="stylesheet" href="styles.css">
+<script src="data.js"></script>
+<script src="common.js"></script>
+</head>
+<body>
+<header class="top"><div class="wrap">
+  <a class="brand" href="index.html"><b>Court Atlas</b><span>2026 season</span></a>
+  <nav id="nav"><a href="season.html">Season Map</a><a href="history.html">History</a><a href="archive.html">Past Champions</a><a href="rackets.html" class="on" aria-current="page">Rackets</a><a href="strings.html">Strings</a><a href="players.html">Players</a><a href="stats.html">Statistics</a></nav>
+</div></header>
+<main class="wrap page">
+<p class="crumb"><a href="index.html">Home</a><span aria-hidden="true">/</span><span>Rackets</span></p>
+<div class="page-head">
+  <p class="eyebrow">Frames &amp; specs</p>
+  <h1>Rackets</h1>
+  <p>Manufacturer specs for popular frames (unstrung weight). Click a dot to highlight that model in the table.</p>
+</div>
+
+<section>
+  <div class="gear">
+    <div class="panel scatter">
+      <div class="filters seg" id="headSeg" role="group" aria-label="Head size">
+        <button id="h-all" aria-pressed="true" data-v="all">All</button>
+        <button id="h-small" aria-pressed="false" data-v="small">97–98 sq in</button>
+        <button id="h-big" aria-pressed="false" data-v="big">100 sq in</button>
+      </div>
+      <svg id="scatter" viewBox="0 0 520 330" role="img" aria-label="Scatter plot of racket weight against head size"></svg>
+    </div>
+    <div class="panel tablebox" style="padding:8px 14px">
+      <table class="rk" id="racketTable"></table>
+    </div>
+  </div>
+  <div class="explain">
+    <div><h3>Head size</h3><p>100 sq in and up gives a bigger sweet spot, more forgiveness and more power. 95–98 sq in gives sharper control and feel.</p></div>
+    <div><h3>Weight</h3><p>285–300 g swings easily. 305–320 g is more stable and drives through the ball. Pros often add lead tape to go past 330 g.</p></div>
+    <div><h3>String pattern</h3><p>Open patterns like 16×19 help spin and pop. Dense 18×20 patterns help control and make strings last longer.</p></div>
+    <div><h3>Balance</h3><p>Head-light frames are quicker at the net. Head-heavy frames add plow-through to a light racket.</p></div>
+  </div>
+</section>
+
+<script>
+let rSel = null, rFilter = 'all';
+const shown = () => RACKETS.filter(r => rFilter === 'all' || (rFilter === 'small' ? r.h < 100 : r.h >= 100));
+function render(){
+  const svg = $('#scatter'); svg.innerHTML = '';
+  const W=520, H=330, L=48, R=16, Tp=16, B=40;
+  const X = v => L + (v-290)/30*(W-L-R), Y = v => Tp + (101-v)/5*(H-Tp-B);
+  for (let v = 290; v <= 320; v += 5){ svg.appendChild(el('line', {class:'grid', x1:X(v), x2:X(v), y1:Tp, y2:H-B})); svg.appendChild(el('text', {x:X(v), y:H-B+16, 'text-anchor':'middle'}, String(v))); }
+  for (const v of [97,98,99,100]){ svg.appendChild(el('line', {class:'grid', x1:L, x2:W-R, y1:Y(v), y2:Y(v)})); svg.appendChild(el('text', {x:L-8, y:Y(v)+4, 'text-anchor':'end'}, String(v))); }
+  svg.appendChild(el('text', {x:(L+W-R)/2, y:H-6, 'text-anchor':'middle'}, 'Weight (g, unstrung)'));
+  const mid = Tp + (H-Tp-B)/2;
+  svg.appendChild(el('text', {x:12, y:mid, 'text-anchor':'middle', transform:`rotate(-90 12 ${mid})`}, 'Head (sq in)'));
+  const groups = {};
+  shown().forEach(r => { const k = r.w + '-' + r.h; (groups[k] = groups[k] || []).push(r); });
+  Object.values(groups).forEach(g => {
+    g.forEach((r, i) => {
+      const c = el('circle', {class:'pt' + (rSel === r.m ? ' hl' : ''), cx:X(r.w) + (i-(g.length-1)/2)*14, cy:Y(r.h), r:7, tabindex:'0', role:'button', 'aria-label':`${r.m}, ${r.w} g, ${r.h} sq in, ${r.p}`});
+      c.appendChild(el('title', {}, `${r.m} · ${r.w} g · ${r.h} sq in · ${r.p}`));
+      const pick = () => { rSel = rSel === r.m ? null : r.m; render(); };
+      c.onclick = pick; c.onkeydown = e => { if (e.key === 'Enter') pick(); };
+      svg.appendChild(c);
+    });
+    const lab = g.length > 1 ? `${g.length} models` : g[0].m.replace(/ 16×19$/, '');
+    const x0 = X(g[0].w), end = x0 > W-130, off = 10 + (g.length-1)*7;
+    svg.appendChild(el('text', {class:'lbl', x:end ? x0-off : x0+off, y:Y(g[0].h)-10, 'text-anchor':end ? 'end' : 'start'}, lab));
+  });
+  $('#racketTable').innerHTML = `<thead><tr><th>Model</th><th class="n">Head</th><th class="n">Weight</th><th>Pattern</th><th>Played by (line)</th></tr></thead><tbody>${shown().map(r => `<tr class="${rSel === r.m ? 'hl' : ''}"><td>${r.m}</td><td class="n">${r.h}</td><td class="n">${r.w} g</td><td class="mono">${r.p}</td><td class="ex">${r.who || '—'}</td></tr>`).join('')}</tbody>`;
+}
+segInit('headSeg', v => { rFilter = v; render(); });
+render();
+</script>
+
+<nav class="nextprev" aria-label="More topics">
+  <a href="archive.html"><small>← Previous</small><b>Past Champions</b></a>
+  <a class="next" href="strings.html"><small>Next →</small><b>Strings</b></a>
+</nav>
+</main>
+<div class="wrap"><footer><p>Data: Wikipedia’s 2026 ATP Tour, WTA Tour, ATP Masters 1000 and WTA 1000 pages and the ATP/WTA rankings of September 28, 2026, compiled on October 5, 2026. Some ATP 250 and 500 dates are by tournament week, and events from October on may change. Finals without a confirmed score are marked “Score not recorded”. Racket specs are manufacturer figures.</p></footer></div>
+</body>
+</html>
