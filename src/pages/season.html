@@ -1,5 +1,5 @@
 <div class="page-head">
-  <p class="eyebrow">ATP &amp; WTA · as of October 5, 2026</p>
+  <p class="eyebrow">ATP &amp; WTA · draws updated <span id="asof"></span></p>
   <h1>Season Map</h1>
   <p>Pick a tournament on the map to see the final, or step through the year month by month. Marker shape shows the surface (● hard, ■ clay, ◆ grass), size shows the tier, hollow markers haven’t been played yet, and pulsing markers are in progress now.</p>
 </div>
@@ -51,6 +51,7 @@
 <script>
 $('#sphere').setAttribute('d', MAP.sphere);
 $('#land').setAttribute('d', MAP.d);
+$('#asof').textContent = utc(FETCHED);
 
 const S = {tour:'all', month:null, sel:'uso', vb:[0,0,1000,470]};
 const byFocus = (a,b) => LV[b.lv].r - LV[a.lv].r || d(a.e) - d(b.e);
@@ -165,13 +166,23 @@ function renderList(){
 function renderDetail(){
   const t = T.find(x => x.id === S.sel), box = $('#detail');
   if (!t){ box.innerHTML = '<p class="empty" style="padding:0">Pick a tournament on the map or in the list.</p>'; return; }
-  const st = status(t);
+  const st = status(t), keys = drawKeys(t).filter(k => !k.endsWith('/Team'));
   const res = t.res.length
-    ? `<div class="res">${t.res.map(r => `<span class="tour">${r.t}</span><span>🏆 <b>${r.w}</b> <span class="ex">d.</span> ${r.r}</span><span class="score">${r.sc}</span>`).join('')}</div>`
+    ? `<div class="res">${t.res.map(r => `<span class="tour">${r.t}</span><span>🏆 <b>${nameLink(r.w)}</b> <span class="ex">d.</span> ${nameLink(r.r)}</span><span class="score">${r.sc}</span>`).join('')}</div>`
     : `<p class="ex">${st === 'live' ? 'In progress now. The final will be added when the event ends.' : 'Not played yet.'}${t.approx ? ' Dates are tentative and may change.' : ''}</p>`;
+  // Live or drawn events: who is still in and the next matches, with win probabilities
+  const draws = keys.map(k => {
+    const ent = entrants(k), pend = pending(k), tour = k.split('/')[1];
+    if (!pend.length) return '';
+    return `<p class="eyebrow">${TOURLABEL[tour]} · ${ent.filter(e => !e.out).length} of ${ent.length} still in</p><div class="preds side">${pend.slice(0, 3).map(predCard).join('')}</div>${pend.length > 3 ? `<a class="slamlink" href="${tHref(t)}#${tour.toLowerCase()}">All ${pend.length} upcoming ${tour} matches →</a>` : ''}`;
+  }).join('');
+  const srcs = [...new Set([...keys, ...t.res.map(r => `${t.id}/${r.t === 'Mixed' ? 'Team' : r.t}`)])].map(srcLine);
   box.innerHTML = `<p class="eyebrow">${t.city}, ${t.co}</p><h4>${t.name}</h4>
     <div class="meta"><span class="st ${st}">${ST[st]}</span><span class="chip mono">${range(t)}</span><span class="chip"><i class="dot ${t.sf}"></i>${SF[t.sf]}${t.indoor ? ' · indoor' : ''}</span><span class="chip">${t.tour === 'BOTH' ? 'ATP & WTA' : t.tour} ${LV[t.lv].n}</span></div>
-    ${res}${t.note ? `<p class="ex">${t.note}</p>` : ''}${t.lv === 'GS' ? `<a class="slamlink" href="archive.html#${t.id}">${t.name} champions since 2000 →</a>` : ''}`;
+    ${res}${t.note ? `<p class="ex">${t.note}</p>` : ''}${draws}
+    <a class="slamlink" href="${tHref(t)}">${keys.length ? 'Full draw, players and results' : 'Tournament page'} →</a>
+    ${t.lv === 'GS' ? `<a class="slamlink" href="archive.html#${t.id}">${t.name} champions since 2000 →</a>` : ''}
+    ${[...new Set(srcs)].join('') || srcLine(null)}`;
 }
 function renderAll(full = true){
   if (full){

@@ -5,7 +5,9 @@
 <link rel="stylesheet" href="styles.css">
 <script src="map.js"></script>
 <script src="data.js"></script>
+<script src="draws.js"></script>
 <script src="common.js"></script>
+<script src="views.js"></script>
 <header class="top"><div class="wrap">
   <a class="brand" href="index.html"><b>Court Atlas</b><span>2026 season</span></a>
   <nav id="nav"><a href="season.html">Season Map</a><a href="history.html">History</a><a href="archive.html">Past Champions</a><a href="rackets.html">Rackets</a><a href="strings.html">Strings</a><a href="players.html">Players</a><a href="stats.html">Statistics</a></nav>
@@ -13,7 +15,7 @@
 <main class="wrap">
 <div class="hub-hero">
   <div class="hero" style="padding:0">
-    <p class="eyebrow">ATP &amp; WTA · as of October 5, 2026</p>
+    <p class="eyebrow">ATP &amp; WTA · draws updated <span id="asof"></span></p>
     <h1>The 2026 season, <em>on the map</em></h1>
     <p>Follow the tour from Melbourne in January to the season finals in November. Each topic below has its own page: the season map, the history of the game, past champions, rackets, strings, players and statistics.</p>
   </div>
@@ -93,6 +95,7 @@
 </section>
 
 <script>
+$('#asof').textContent = utc(FETCHED);
 $('#sphere').setAttribute('d', MAP.sphere);
 $('#land').setAttribute('d', MAP.d);
 const g = $('#pts');
@@ -111,8 +114,8 @@ $('#kPts').textContent = PLAYERS.ATP[0].pts.toLocaleString('en-US');
 
 $('#board').innerHTML = ['ao','rg','wim','uso'].map(id => T.find(t => t.id === id)).map(t => `<div>
   <span class="slam"><i class="dot ${t.sf}"></i>${t.name}</span>
-  <span class="w">${t.res[0].w} <small>ATP</small></span>
-  <span class="w">${t.res[1].w} <small>WTA</small></span>
+  <span class="w">${nameLink(t.res[0].w)} <small>ATP</small></span>
+  <span class="w">${nameLink(t.res[1].w)} <small>WTA</small></span>
 </div>`).join('');
 
 const LIVE = [...T].filter(t => status(t) === 'live').sort((a,b) => LV[b.lv].r - LV[a.lv].r || d(a.e) - d(b.e));
@@ -120,13 +123,19 @@ function renderNow(tour){
   const left = t => Math.round((d(t.e) - TODAY) / 864e5);
   const list = LIVE.filter(t => tour === 'all' || t.tour === 'BOTH' || t.tour === tour);
   $('#nowSub').textContent = `${list.length} tournament${list.length === 1 ? '' : 's'} in progress`;
-  $('#nowGrid').innerHTML = list.length ? list.map(t => `<a class="nowcard" href="season.html#${t.id}">
+  $('#nowGrid').innerHTML = list.length ? list.map(t => {
+    const keys = drawKeys(t).filter(k => !k.endsWith('/Team')), next = keys.flatMap(pending);
+    const alive = keys.map(k => `${entrants(k).filter(e => !e.out).length} ${k.split('/')[1]}`).join(' · ');
+    return `<article class="nowcard">
     <span class="eyebrow">${t.tour === 'BOTH' ? 'ATP & WTA' : t.tour} ${LV[t.lv].n} · ${t.city}, ${t.co}</span>
-    <b>${t.name}</b>
-    <span class="meta"><i class="dot ${t.sf}"></i>${SF[t.sf]}${t.indoor ? ' · indoor' : ''} · <span class="mono">${range(t)}</span></span>
+    <b><a href="${tHref(t)}">${t.name}</a></b>
+    <span class="meta"><i class="dot ${t.sf}"></i>${SF[t.sf]}${t.indoor ? ' · indoor' : ''} · <span class="mono">${range(t)}</span>${alive ? ` · ${alive} players left` : ''}</span>
     <span class="left">${left(t) <= 0 ? 'Final today' : left(t) === 1 ? 'Final tomorrow' : `Final in ${left(t)} days`}</span>
-    <span class="go">Follow on the map →</span>
-  </a>`).join('') : `<p class="ex">No ${tour} tournaments are being played right now.</p>`;
+    ${next.length ? `<div class="preds side">${predCard(next[0])}</div>${next.length > 1 ? `<span class="ex">+${next.length - 1} more match${next.length > 2 ? 'es' : ''} scheduled</span>` : ''}` : ''}
+    <span class="go"><a href="${tHref(t)}">Draw, players &amp; predictions →</a> <a href="season.html#${t.id}">Map</a></span>
+    ${keys.map(srcLine).join('')}
+  </article>`;
+  }).join('') : `<p class="ex">No ${tour} tournaments are being played right now.</p>`;
 }
 if (LIVE.length){
   $('#now').hidden = false;
@@ -140,9 +149,9 @@ const next = sorted.filter(t => status(t) !== 'done').slice(0, 3);
 $('#recent').innerHTML = [...done, ...next].map(t => {
   const st = status(t);
   const sub = t.res[0] ? `Won by ${t.res.map(r => r.w).join(' · ')}` : `${range(t)} · ${t.city}`;
-  return `<a href="season.html#${t.id}"><i class="dot ${t.sf}"></i><span><span class="nm">${t.name}</span><br><span class="sub">${sub}</span></span><span class="st ${st}">${ST[st]}</span></a>`;
+  return `<a href="${tHref(t)}"><i class="dot ${t.sf}"></i><span><span class="nm">${t.name}</span><br><span class="sub">${sub}</span></span><span class="st ${st}">${ST[st]}</span></a>`;
 }).join('');
 </script>
 
 </main>
-<div class="wrap"><footer><p>Data: Wikipedia’s 2026 ATP Tour, WTA Tour, ATP Masters 1000 and WTA 1000 pages and the ATP/WTA rankings of September 28, 2026, compiled on October 5, 2026. Some ATP 250 and 500 dates are by tournament week, and events from October on may change. Finals without a confirmed score are marked “Score not recorded”. Racket specs are manufacturer figures.</p></footer></div>
+<div class="wrap"><footer><p>Data: draws, scores and finals from Wikipedia’s 2026 tournament pages, fetched Oct 6, 2026, 01:44 UTC (each section links its page and revision time). Rankings from Wikipedia’s ATP and WTA rankings pages, September 28, 2026; profiles, history and equipment compiled October 5, 2026. Some ATP 250 and 500 dates are by tournament week, and events from October on may change. Win probabilities are an Elo estimate from covered matches, <a href="players.html#method">explained here</a>. Racket specs are manufacturer figures.</p></footer></div>

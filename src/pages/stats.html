@@ -11,6 +11,7 @@
     <button id="s-wta" aria-pressed="false" data-v="WTA">WTA women</button>
   </div>
   <div class="stats" id="statsGrid"></div>
+  <div id="statsSrc"></div>
 </section>
 
 <script>
@@ -32,6 +33,8 @@ function render(v){
   const slams = tours.flatMap(t => PLAYERS[t].map(p => ({...p, t}))).filter(p => p.gs > 0).sort((a,b) => b.gs - a.gs);
   hbars($('#slamChart'), slams.map(p => ({n:tours.length > 1 ? `${p.n} (${p.t})` : p.n, v:p.gs, tip:`${p.n} · ${p.gs} major titles`})), 8, [0,2,4,6,8], '');
 }
+$('#statsSrc').innerHTML = srcStatic([[RANK_SRC.ATP, 'Wikipedia, ATP rankings'], [RANK_SRC.WTA, 'Wikipedia, WTA rankings']], `ranking points of Sept 28, 2026 · compiled ${COMPILED}`)
+  + `<p class="src">Titles: the finals on each <a href="season.html">tournament page</a>, each linked to its Wikipedia draw (fetched ${utc(FETCHED)}). Career majors: <a href="${wikiUrl("List of Grand Slam men's singles champions")}" rel="external">men’s</a> and <a href="${wikiUrl("List of Grand Slam women's singles champions")}" rel="external">women’s</a> champions lists on Wikipedia, through the 2026 US Open.</p>`;
 segInit('sSeg', render);
 render('all');
 </script>

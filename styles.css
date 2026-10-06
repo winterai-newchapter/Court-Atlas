@@ -311,3 +311,72 @@ a{color:inherit}
 .grouph{font-family:var(--f-display);font-size:24px;text-transform:uppercase;letter-spacing:.02em;margin:22px 0 10px}
 #playerGrid > .grouph:first-child{margin-top:4px}
 #playerGrid .pdetail{margin-bottom:8px}
+
+/* player links and source attribution */
+a.pl{color:inherit;text-decoration:underline;text-decoration-color:var(--line);text-underline-offset:3px;text-decoration-thickness:1px}
+a.pl:hover{text-decoration-color:currentColor}
+.src{font-size:12px;color:var(--muted);margin-top:10px;line-height:1.5;overflow-wrap:anywhere}
+.src a{color:var(--muted)}
+.srclist{margin:6px 0 0;padding-left:18px;font-size:12px;columns:2 280px;column-gap:24px}
+.srclist li{break-inside:avoid;margin-bottom:2px}
+.srclist a{color:var(--muted)}
+
+/* win probability cards */
+.preds{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,300px),1fr));gap:12px}
+.preds.side{grid-template-columns:1fr;gap:8px}
+.pred{border:1px solid var(--line);border-radius:var(--r);background:var(--surface);padding:12px 14px;display:flex;flex-direction:column;gap:6px;min-width:0}
+.pred .pn{display:flex;justify-content:space-between;gap:8px;font-size:14px;align-items:baseline}
+.pred .pn b{font-size:16px}
+.pbar{height:8px;border-radius:999px;background:var(--sunk);overflow:hidden;box-shadow:inset 0 0 0 1px var(--line)}
+.pbar span{display:block;height:100%;background:var(--ink)}
+.warn{color:var(--clay)}
+.why summary{font-size:12px;font-weight:600;color:var(--accent);cursor:pointer;margin-top:2px}
+.why[open] summary{margin-bottom:8px}
+.why .ex{margin-top:8px;line-height:1.5}
+.basis{font-size:12px}
+.basis th,.basis td{padding:4px 4px}
+.basis td:first-child{color:var(--muted);white-space:nowrap}
+.form{display:inline-flex;gap:2px;flex-wrap:wrap}
+.form i{font-style:normal;font-family:var(--f-mono);font-size:10px;font-weight:600;width:16px;height:16px;display:inline-grid;place-items:center;border-radius:3px}
+.form i.w{background:var(--ink);color:var(--bg)}
+.form i.l{background:var(--sunk);color:var(--muted);box-shadow:inset 0 0 0 1px var(--line)}
+.sfrec{display:flex;flex-direction:column;gap:6px;font-size:13px}
+.sfrec > div{display:grid;grid-template-columns:72px 1fr 44px 52px;gap:10px;align-items:center}
+.sfrec .track{height:10px;background:var(--sunk);border-radius:999px;overflow:hidden}
+.sfrec .fill{display:block;height:100%}
+.sfrec .fill.hard{background:var(--hard)} .sfrec .fill.clay{background:var(--clay)} .sfrec .fill.grass{background:var(--grass)}
+.sfrec b{text-align:right}
+
+/* tournament and player pages */
+.page-head .meta{display:flex;gap:6px;flex-wrap:wrap;margin-top:14px}
+.page-head .meta a.chip{text-decoration:none}
+.tbox{padding:16px 18px;margin-top:24px}
+.tbox h2{font-size:20px;margin-bottom:10px}
+.tbox .res{font-size:15px}
+.tsec .sec-head{margin-bottom:8px}
+.subh{font-size:15px;margin:22px 0 10px}
+.entrants{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,250px),1fr));gap:2px 16px;font-size:14px}
+.entrants li{display:grid;grid-template-columns:34px 1fr;column-gap:6px;padding:4px 0;border-bottom:1px solid var(--line)}
+.entrants li > .ex:last-child{grid-column:2}
+.entrants li.out > a{color:var(--muted)}
+.entrants .sd{font-size:11px;color:var(--muted);padding-top:3px}
+details.round{border:1px solid var(--line);border-radius:var(--r);background:var(--surface);margin-bottom:8px}
+details.round > summary{padding:10px 14px;cursor:pointer;font-weight:600;font-size:14px}
+details.round > summary .ex{font-weight:400;margin-left:6px}
+details.round > summary a{color:inherit}
+.mlist{list-style:none;margin:0;padding:0 14px 10px;font-size:14px}
+.mlist li{display:flex;justify-content:space-between;gap:12px;padding:6px 0;border-top:1px solid var(--line);flex-wrap:wrap}
+.mlist li.lost b:first-child{color:var(--muted)}
+.tbox .mlist{padding:0;margin-top:10px}
+.method{padding:16px 18px;display:flex;flex-direction:column;gap:8px;max-width:80ch}
+.method h3{font-size:18px}
+.tlinks{display:flex;gap:16px;flex-wrap:wrap;margin-top:24px}
+.pgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,380px),1fr));gap:16px;padding-top:0}
+.pgrid .tbox{margin-top:0}
+.plinks{list-style:none;margin:0;padding:4px 14px 12px;columns:4 180px;column-gap:20px;font-size:13px}
+.plinks li{padding:2px 0;break-inside:avoid}
+.nowcard b a{color:inherit;text-decoration:none}
+.nowcard b a:hover{text-decoration:underline}
+.nowcard .go a{color:inherit;margin-right:10px}
+.nowcard .pred{background:var(--surface)}
+.detail .preds{margin-top:2px}
