@@ -111,13 +111,14 @@ const RACKETS = [
  {m:'Yonex VCORE 98',h:98,w:305,p:'16×19',who:''},
  {m:'Tecnifibre TF40 305',h:98,w:305,p:'16×19',who:'Daniil Medvedev'},
 ];
+/* pr: price tier 1–4; usd: approximate US retail price of one 12 m set, October 2026 */
 const STRINGS = [
- {k:'syn',t:'Synthetic gut',ex:'Prince Synthetic Gut, Gamma Synthetic Gut',p:3,c:3,s:2,cf:3,d:3,kg:[23,25],who:'Beginners and anyone who wants a cheap, all-round string.',note:'Solid nylon core. Cheap, balanced, and a good starting point.'},
- {k:'multi',t:'Multifilament',ex:'Wilson NXT, Tecnifibre X-One Biphase',p:4,c:3,s:2,cf:4,d:2,kg:[23,25],who:'Players with arm or elbow pain, and anyone who wants easy depth.',note:'Hundreds of twisted fibres give a gut-like feel that is easy on the elbow.'},
- {k:'gut',t:'Natural gut',ex:'Babolat VS Touch, Luxilon Natural Gut',p:5,c:3,s:3,cf:5,d:2,kg:[24,26],who:'Players who want the best feel and arm comfort and don’t mind the price.',note:'Made from cow intestine. Holds tension best of any string and costs the most.'},
- {k:'soft',t:'Soft polyester',ex:'Babolat RPM Soft, Solinco Hyper-G Soft',p:3,c:4,s:4,cf:2,d:4,kg:[21,23],who:'Club players with fast topspin swings who break softer strings.',note:'A softer poly that keeps most of the spin and control with less shock.'},
- {k:'poly',t:'Polyester (mono)',ex:'Luxilon ALU Power, Babolat RPM Blast, Solinco Hyper-G',p:2,c:5,s:5,cf:1,d:5,kg:[21,23],who:'Strong, advanced players with long, fast swings and healthy arms.',note:'Used by most tour players. Loses tension quickly, so it needs frequent restringing.'},
- {k:'hybrid',t:'Hybrid',ex:'Poly mains + multifilament or gut crosses',p:4,c:4,s:4,cf:4,d:4,kg:[22,24],who:'Players who want poly’s control and spin with a softer feel.',note:'Different strings in the mains and crosses to combine their strengths.'},
+ {k:'syn',pr:1,usd:[4,8],t:'Synthetic gut',ex:'Prince Synthetic Gut, Gamma Synthetic Gut',p:3,c:3,s:2,cf:3,d:3,kg:[23,25],who:'Beginners and anyone who wants a cheap, all-round string.',note:'Solid nylon core. Cheap, balanced, and a good starting point.'},
+ {k:'multi',pr:3,usd:[12,22],t:'Multifilament',ex:'Wilson NXT, Tecnifibre X-One Biphase',p:4,c:3,s:2,cf:4,d:2,kg:[23,25],who:'Players with arm or elbow pain, and anyone who wants easy depth.',note:'Hundreds of twisted fibres give a gut-like feel that is easy on the elbow.'},
+ {k:'gut',pr:4,usd:[35,50],t:'Natural gut',ex:'Babolat VS Touch, Luxilon Natural Gut',p:5,c:3,s:3,cf:5,d:2,kg:[24,26],who:'Players who want the best feel and arm comfort and don’t mind the price.',note:'Made from cow intestine. Holds tension best of any string and costs the most.'},
+ {k:'soft',pr:2,usd:[10,18],t:'Soft polyester',ex:'Babolat RPM Soft, Solinco Hyper-G Soft',p:3,c:4,s:4,cf:2,d:4,kg:[21,23],who:'Club players with fast topspin swings who break softer strings.',note:'A softer poly that keeps most of the spin and control with less shock.'},
+ {k:'poly',pr:2,usd:[8,20],t:'Polyester (mono)',ex:'Luxilon ALU Power, Babolat RPM Blast, Solinco Hyper-G',p:2,c:5,s:5,cf:1,d:5,kg:[21,23],who:'Strong, advanced players with long, fast swings and healthy arms.',note:'Used by most tour players. Loses tension quickly, so it needs frequent restringing.'},
+ {k:'hybrid',pr:3,usd:[10,30],t:'Hybrid',ex:'Poly mains + multifilament or gut crosses',p:4,c:4,s:4,cf:4,d:4,kg:[22,24],who:'Players who want poly’s control and spin with a softer feel.',note:'Different strings in the mains and crosses to combine their strengths.'},
 ];
 
 /* Grand Slam singles champions 2000–2025, in order [Australian Open, Roland Garros, Wimbledon, US Open]. null = not held. 2026 comes from T. */

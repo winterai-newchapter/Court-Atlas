@@ -1,7 +1,7 @@
 <div class="page-head">
   <p class="eyebrow">For club and weekend players</p>
   <h1>Strings</h1>
-  <p>Strings are the only part of your racket that touches the ball. The right string and tension can change how a racket plays more than switching rackets, and it costs a fraction of the price. Answer six quick questions below to find a setup that suits your game.</p>
+  <p>Strings are the only part of your racket that touches the ball. The right string and tension can change how a racket plays more than switching rackets, and it costs a fraction of the price. Answer seven quick questions below to find a setup that suits your game.</p>
 </div>
 
 <section>
@@ -15,7 +15,7 @@
 </section>
 
 <section>
-  <div class="sec-head"><div><p class="eyebrow">Six questions</p><h2>String finder</h2></div></div>
+  <div class="sec-head"><div><p class="eyebrow">Seven questions</p><h2>String finder</h2></div></div>
   <div class="gear finder">
     <form class="panel quiz" id="quiz" onsubmit="return false">
       <fieldset><legend>How long have you played?</legend><div class="seg" data-q="level">
@@ -30,6 +30,8 @@
         <button type="button" data-v="power">Power and depth</button><button type="button" data-v="control" aria-pressed="true">Control</button><button type="button" data-v="spin">Spin</button><button type="button" data-v="comfort">Comfort</button></div></fieldset>
       <fieldset><legend>How often do you break strings?</legend><div class="seg" data-q="brk">
         <button type="button" data-v="never" aria-pressed="true">Rarely or never</button><button type="button" data-v="month">About once a month</button><button type="button" data-v="often">Every week or two</button></div></fieldset>
+      <fieldset><legend>How much do you want to spend?</legend><div class="seg" data-q="budget">
+        <button type="button" data-v="low">Keep it cheap</button><button type="button" data-v="mid" aria-pressed="true">Mid-range is fine</button><button type="button" data-v="high">Price is no issue</button></div></fieldset>
     </form>
     <div class="panel pick" id="pick" aria-live="polite"></div>
   </div>
@@ -41,7 +43,7 @@
   <div class="panel tablebox" style="padding:8px 14px">
     <table id="stringTable"></table>
   </div>
-  <p class="src">Ratings are relative 1–5 scores for comparison, not lab measurements. Product names are examples, not endorsements.</p>
+  <p class="src">Ratings are relative 1–5 scores for comparison, not lab measurements. Prices are approximate US retail for one 12 m set as of October 2026, before the stringing fee (usually $15–25); a 200 m reel often cuts the cost per set by about half. Product names are examples, not endorsements.</p>
 </section>
 
 <section>
@@ -97,8 +99,10 @@
 </section>
 
 <script>
+const usd = ([lo, hi]) => `$${lo}–${hi}`;
+const price = s => `<span class="price"><b aria-label="Price tier ${s.pr} of 4">${'$'.repeat(s.pr)}<span>${'$'.repeat(4 - s.pr)}</span></b><span class="ex mono">${usd(s.usd)} a set</span></span>`;
 const pips = n => `<span class="pips" aria-label="${n} of 5">${[1,2,3,4,5].map(i => `<i class="${i <= n ? 'on' : ''}"></i>`).join('')}</span>`;
-$('#stringTable').innerHTML = `<thead><tr><th>Type</th><th>Power</th><th>Control</th><th>Spin</th><th>Comfort</th><th>Durability</th></tr></thead><tbody>${STRINGS.map(s => `<tr><td><b>${s.t}</b><div class="ex">${s.note}</div><div style="margin-top:4px;font-size:13px">Best for: ${s.who}</div><div class="ex" style="margin-top:4px">e.g. ${s.ex}</div></td><td>${pips(s.p)}</td><td>${pips(s.c)}</td><td>${pips(s.s)}</td><td>${pips(s.cf)}</td><td>${pips(s.d)}</td></tr>`).join('')}</tbody>`;
+$('#stringTable').innerHTML = `<thead><tr><th>Type</th><th>Power</th><th>Control</th><th>Spin</th><th>Comfort</th><th>Durability</th><th>Price</th></tr></thead><tbody>${STRINGS.map(s => `<tr><td><b>${s.t}</b><div class="ex">${s.note}</div><div style="margin-top:4px;font-size:13px">Best for: ${s.who}</div><div class="ex" style="margin-top:4px">e.g. ${s.ex}</div></td><td>${pips(s.p)}</td><td>${pips(s.c)}</td><td>${pips(s.s)}</td><td>${pips(s.cf)}</td><td>${pips(s.d)}</td><td>${price(s)}</td></tr>`).join('')}</tbody>`;
 
 /* ---------- string finder ---------- */
 const Q = {};
@@ -114,16 +118,19 @@ document.querySelectorAll('#quiz .seg').forEach(seg => {
 });
 const SBY = Object.fromEntries(STRINGS.map(s => [s.k, s]));
 const lbs = kg => Math.round(kg * 2.20462);
-function recommend({level, swing, arm, often, want, brk}){
+const LABOR = [15, 25];
+function recommend({level, swing, arm, often, want, brk, budget}){
   const why = [];
   let k;
-  if (arm === 'yes'){ k = want === 'power' || want === 'comfort' ? 'gut' : 'multi'; why.push('With arm pain, comfort comes first: skip polyester until it settles.'); }
+  if (arm === 'yes'){ k = budget === 'high' ? 'gut' : 'multi'; why.push('With arm pain, comfort comes first: skip polyester until it settles.'); }
   else if (arm === 'some'){ k = swing === 'heavy' || brk === 'often' ? 'hybrid' : 'multi'; why.push(k === 'hybrid' ? 'Poly mains keep your spin and stop breakages; soft crosses protect your arm.' : 'A soft string at a lower tension takes shock off an arm that sometimes hurts.'); }
   else if (level === 'new'){ k = want === 'power' || want === 'comfort' ? 'multi' : 'syn'; why.push(k === 'syn' ? 'Synthetic gut is cheap and balanced, a good base to learn what you like.' : 'A multifilament helps short swings get depth and is kind to a new arm.'); }
   else if (swing === 'heavy' || brk === 'often'){ k = level === 'comp' && want !== 'comfort' ? 'poly' : want === 'comfort' ? 'hybrid' : 'soft'; why.push('Fast topspin swings snap softer strings quickly and benefit from a string that grips the ball.'); }
   else if (want === 'power' || want === 'comfort'){ k = 'multi'; why.push('A multifilament gives free depth and a soft feel without a fast swing.'); }
   else if (want === 'spin'){ k = level === 'comp' ? 'poly' : 'soft'; why.push('Polyester strings snap back into place after contact, which adds spin.'); }
   else { k = level === 'comp' ? 'hybrid' : 'syn'; why.push(k === 'hybrid' ? 'A hybrid gives the control of poly with a friendlier feel.' : 'Synthetic gut is predictable and cheap to replace often.'); }
+  if (budget === 'low' && k === 'multi' && arm === 'no'){ k = 'syn'; why.push('Synthetic gut keeps the cost down; move up to a multifilament if you want more comfort later.'); }
+  if (budget === 'high' && k === 'multi' && (want === 'comfort' || want === 'power')){ k = 'gut'; why.push('With price no issue, natural gut is the most comfortable and powerful string there is.'); }
   const s = SBY[k];
   let [lo, hi] = s.kg;
   if (want === 'power' || want === 'comfort'){ lo--; hi--; why.push('Strung a little looser for more depth and comfort.'); }
@@ -132,10 +139,14 @@ function recommend({level, swing, arm, often, want, brk}){
   const poly = k === 'poly' || k === 'soft' || k === 'hybrid';
   const gauge = brk === 'often' ? '16 (1.30 mm), or 15L if it still breaks quickly' : want === 'spin' || (poly && brk === 'never') ? '17 / 16L (1.25 mm)' : '16 (1.30 mm)';
   const n = +often;
+  const perYear = poly ? (n >= 4 ? [17, 26] : n >= 2 ? [12, 12] : [4, 6]) : (n >= 4 ? [4, 6] : n >= 2 ? [2, 3] : [2, 2]);
+  const r10 = x => Math.round(x / 10) * 10;
+  const yearly = [r10(perYear[0] * (s.usd[0] + LABOR[0])), r10(perYear[1] * (s.usd[1] + LABOR[1]))];
+  if (budget === 'low') why.push('Buying a 200 m reel instead of single sets often halves the string cost.');
   const restring = poly
     ? (n >= 4 ? 'every 2–3 weeks' : n >= 2 ? 'about once a month' : 'every 2–3 months') + ' (polyester goes dead after roughly 15–20 hours of play)'
     : (n >= 4 ? 'every 2–3 months' : n >= 2 ? 'every 4–6 months' : 'at least twice a year') + ', or sooner if it breaks';
-  return {s, lo, hi, gauge, restring, why};
+  return {s, lo, hi, gauge, restring, yearly, why};
 }
 function renderPick(){
   const r = recommend(Q);
@@ -146,6 +157,7 @@ function renderPick(){
     <div><dt>Tension</dt><dd class="num">${r.lo}–${r.hi} kg <span class="ex">${lbs(r.lo)}–${lbs(r.hi)} lbs</span></dd></div>
     <div><dt>Gauge</dt><dd>${r.gauge}</dd></div>
     <div><dt>Restring</dt><dd>${r.restring}</dd></div>
+    <div><dt>Cost</dt><dd>${usd(r.s.usd)} a set, plus about ${usd(LABOR)} to string it <span class="ex">≈ ${usd(r.yearly)} a year at your restring rate</span></dd></div>
   </dl>
   <h4 class="subh">Why this fits you</h4>
   <ul class="why-list">${r.why.map(w => `<li>${w}</li>`).join('')}</ul>

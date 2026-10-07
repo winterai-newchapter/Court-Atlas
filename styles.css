@@ -396,10 +396,13 @@ details.round > summary a{color:inherit}
 .quiz legend{font-size:14px;font-weight:600;padding:0;margin-bottom:6px}
 .quiz .seg{display:flex;flex-wrap:wrap;border-radius:var(--r)}
 .quiz .seg button{flex:1 1 auto;border-radius:var(--r);padding:7px 12px}
-.pick{padding:18px;align-self:start}
+.pick{padding:18px}
 .pick .pick-name{font-family:var(--f-display);font-size:34px;line-height:1.1;margin:4px 0 2px}
 .pick .facts{grid-template-columns:1fr}
 .why-list{margin:0;padding-left:18px;font-size:14px}
 .why-list li + li{margin-top:4px}
 .ratings{display:flex;flex-wrap:wrap;gap:8px 16px;margin-top:14px;font-size:12px}
 .ratings > span{display:inline-flex;align-items:center;gap:6px}
+.price{display:flex;flex-direction:column;gap:2px;white-space:nowrap}
+.price b{letter-spacing:1px}
+.price b span{color:var(--line)}
