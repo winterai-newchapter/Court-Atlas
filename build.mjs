@@ -4,6 +4,7 @@
 // Refresh draws first with: node scripts/fetch-draws.mjs (.github/workflows/refresh.yml does both every 15 minutes).
 // Pages with poll:true, and the pages of tournaments in progress, also refresh results in the browser with live.js.
 import fs from 'fs';
+import crypto from 'crypto';
 const OUT = '.';
 // Canonical origin for <link rel="canonical">, Open Graph and structured data. Change it if the site moves.
 const SITE = 'https://winterai-newchapter.github.io/Court-Atlas/';
@@ -35,6 +36,9 @@ const PAGES = [
 const HOME = {title:'Court Atlas: 2026 ATP & WTA Tennis Season Map, Draws & Results',
   desc:'Follow the 2026 tennis season: a world map of ATP and WTA tournaments, live draws with win probabilities, player form and past champions.'};
 const ASSETS = ['styles.css','data.js','draws.js','common.js','views.js','map.js','parse.js','live.js'];
+// Asset URLs carry a content hash (?v=…) so browsers and CDNs that cache CSS/JS for hours still load each new build
+const VER = Object.fromEntries(ASSETS.map(f => [f, crypto.createHash('md5').update(fs.readFileSync(`src/${f}`)).digest('hex').slice(0, 8)]));
+const asset = (base, f) => `${base}${f}?v=${VER[f]}`;
 
 // The same data and view code the browser runs, evaluated here to render static pages
 const V = new Function(['data.js','draws.js','common.js','views.js'].map(f => fs.readFileSync(`src/${f}`, 'utf8')).join('\n;\n')
@@ -43,14 +47,14 @@ const V = new Function(['data.js','draws.js','common.js','views.js'].map(f => fs
 const FONTS = base => `<link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;800&family=Public+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap">
-<link rel="stylesheet" href="${base}styles.css">`;
+<link rel="stylesheet" href="${asset(base, 'styles.css')}">`;
 const header = (cur, base = '') => `<header class="top"><div class="wrap">
   <a class="brand" href="${base}index.html"><b>Court Atlas</b><span>2026 season</span></a>
   <nav id="nav">${PAGES.map(p => `<a href="${base}${p.f}.html"${p.f === cur ? ' class="on" aria-current="page"' : ''}>${p.t}</a>`).join('')}</nav>
 </div></header>`;
 const footer = base => `<footer><p>Data: Wikipedia and manufacturer specs. Win probabilities are an <a href="${base}players.html#method">Elo estimate</a>.</p></footer>`;
 const scripts = (p, base) => [p.map && 'map.js', 'data.js', p.live && 'draws.js', 'common.js', p.live && 'views.js', p.poll && 'parse.js', p.poll && 'live.js']
-  .filter(Boolean).map(f => `<script src="${base}${f}"></script>`).join('\n');
+  .filter(Boolean).map(f => `<script src="${asset(base, f)}"></script>`).join('\n');
 
 const attr = s => String(s).replace(/&/g, '&amp;').replace(/"/g, '&quot;');
 const ld = o => `<script type="application/ld+json">${JSON.stringify(o).replace(/</g, '\\u003c')}</script>`;
