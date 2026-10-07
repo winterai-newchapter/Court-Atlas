@@ -146,16 +146,20 @@ function renderNow(tour){
   nowTour = tour;
   const left = t => Math.round((d(t.e) - TODAY) / 864e5);
   const list = LIVE.filter(t => tour === 'all' || t.tour === 'BOTH' || t.tour === tour);
+  const per = Math.ceil(3 / Math.max(1, list.length));
   $('#nowSub').textContent = `${list.length} tournament${list.length === 1 ? '' : 's'} in progress`;
   $('#nowGrid').innerHTML = list.length ? list.map(t => {
-    const keys = drawKeys(t).filter(k => !k.endsWith('/Team')), next = keys.flatMap(pending);
+    const keys = drawKeys(t).filter(k => !k.endsWith('/Team')), next = keys.flatMap(pending).filter(m => m.a && m.b);
+    // At least three matches on screen in total: split them across the live cards, topping up with the latest results
+    const shown = next.slice(0, per), done = MATCHES.filter(m => keys.includes(m.key) && played(m)).slice(-(per - shown.length)).reverse();
     const alive = keys.map(k => `${entrants(k).filter(e => !e.out).length} ${k.split('/')[1]}`).join(' · ');
     return `<article class="nowcard">
     <span class="eyebrow">${t.tour === 'BOTH' ? 'ATP & WTA' : t.tour} ${LV[t.lv].n} · ${t.city}, ${t.co}</span>
     <b><a href="${tHref(t)}">${t.name}</a></b>
     <span class="meta"><i class="dot ${t.sf}"></i>${SF[t.sf]}${t.indoor ? ' · indoor' : ''} · <span class="mono">${range(t)}</span>${alive ? ` · ${alive} players left` : ''}</span>
     <span class="left">${left(t) <= 0 ? 'Final today' : left(t) === 1 ? 'Final tomorrow' : `Final in ${left(t)} days`}</span>
-    ${next.length ? `<div class="preds side">${predCard(next[0])}</div>${next.length > 1 ? `<span class="ex">+${next.length - 1} more match${next.length > 2 ? 'es' : ''} scheduled</span>` : ''}` : ''}
+    ${shown.length ? `<div class="preds${per > 1 ? '' : ' side'}">${shown.map(predCard).join('')}</div>${next.length > shown.length ? `<span class="ex">+${next.length - shown.length} more match${next.length - shown.length > 1 ? 'es' : ''} scheduled</span>` : ''}` : ''}
+    ${shown.length < per && done.length ? `<h5 class="subh">Latest results</h5><ul class="mlist">${done.map(m => matchLine(m)).join('')}</ul>` : ''}
     <span class="go"><a href="${tHref(t)}">Draw, players &amp; predictions →</a> <a href="season.html#${t.id}">Map</a></span>
     ${keys.map(srcLine).join('')}
   </article>`;
