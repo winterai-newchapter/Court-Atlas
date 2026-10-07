@@ -2,7 +2,8 @@
   <div class="hero" style="padding:0">
     <p class="eyebrow">ATP &amp; WTA · draws updated <span id="asof"></span></p>
     <h1>The 2026 season, <em>on the map</em></h1>
-    <p>Follow the tour from Melbourne in January to the season finals in November. Each topic below has its own page: the season map, the history of the game, past champions, rackets, strings, players and statistics.</p>
+    <p>Live draws, next matches and results for every covered ATP and WTA event, January to November.</p>
+    <p><a class="slamlink" href="season.html">Open the season map →</a></p>
   </div>
   <a href="season.html" aria-label="Open the season map">
     <svg class="minimap" id="minimap" viewBox="0 0 1000 470" role="img" aria-label="Preview map of 2026 tournaments">
@@ -13,6 +14,7 @@
   </a>
 </div>
 
+
 <section class="now" id="now" aria-labelledby="nowTitle" hidden>
   <div class="now-head"><span class="livedot" aria-hidden="true"></span><h2 id="nowTitle">Now playing</h2><span class="ex" id="nowSub"></span>
     <div class="seg" id="nowSeg" role="group" aria-label="Tour" style="margin-left:auto">
@@ -20,64 +22,66 @@
       <button aria-pressed="false" data-v="ATP">ATP</button>
       <button aria-pressed="false" data-v="WTA">WTA</button>
     </div></div>
+  <p class="livestamp" id="livestamp" hidden></p>
   <div class="now-grid" id="nowGrid"></div>
-</section>
-
-<div class="board" id="board"></div>
-<p style="text-align:right"><a class="slamlink" href="archive.html">Past Grand Slam champions →</a></p>
-
-<section style="padding-top:40px">
-  <div class="sec-head"><div><p class="eyebrow">Explore</p><h2>Topics</h2></div></div>
-  <nav class="topics" aria-label="Topics">
-    <a class="topic feature" href="season.html">
-      <span class="k" id="kSeason">36</span>
-      <h2>Season Map</h2>
-      <p>Every covered tournament on a world map, with finals and scores. Filter by tour, zoom by region, and play the year from January to December.</p>
-      <span class="go">Open the map →</span>
-    </a>
-    <a class="topic" href="history.html">
-      <span class="k">1874</span>
-      <h2>History</h2>
-      <p>From Wingfield’s lawn tennis patent to electronic line calling, plus the all-time Grand Slam leaders.</p>
-      <span class="go">Read the timeline →</span>
-    </a>
-    <a class="topic" href="archive.html">
-      <span class="k">2000–</span>
-      <h2>Past Champions</h2>
-      <p>Every Grand Slam singles champion since 2000, ATP and WTA, with an all-time leaderboard by era.</p>
-      <span class="go">Browse the archive →</span>
-    </a>
-    <a class="topic" href="rackets.html">
-      <span class="k" id="kRackets">11</span>
-      <h2>Rackets</h2>
-      <p>Head size, weight and string pattern for popular frames, and which pros play each line.</p>
-      <span class="go">Compare frames →</span>
-    </a>
-    <a class="topic" href="strings.html">
-      <span class="k">24 kg</span>
-      <h2>Strings</h2>
-      <p>Poly, gut, multifilament and hybrids compared, with a kg-to-lbs tension converter and gauge chart.</p>
-      <span class="go">Choose a string →</span>
-    </a>
-    <a class="topic" href="players.html">
-      <span class="k">Top 10</span>
-      <h2>Players</h2>
-      <p>Profiles of the ATP and WTA top 10: age, playing style, career majors and 2026 finals.</p>
-      <span class="go">Meet the players →</span>
-    </a>
-    <a class="topic" href="stats.html">
-      <span class="k" id="kPts">11,000</span>
-      <h2>Statistics</h2>
-      <p>Ranking points, 2026 title counts and career major titles, charted.</p>
-      <span class="go">See the numbers →</span>
-    </a>
-  </nav>
 </section>
 
 <section>
   <div class="sec-head"><div><p class="eyebrow">Latest</p><h2>Recent and upcoming</h2></div></div>
   <div class="recent" id="recent"></div>
 </section>
+
+<div class="board" id="board"></div>
+<p style="text-align:right"><a class="slamlink" href="archive.html">Past Grand Slam champions →</a></p>
+
+<section style="padding-top:40px">
+  <div class="sec-head"><div><h2>More</h2></div></div>
+  <nav class="topics" aria-label="Topics">
+    <a class="topic feature" href="season.html">
+      <span class="k" id="kSeason">36</span>
+      <h2>Season Map</h2>
+      <p>Every covered tournament, live draws and finals on a world map.</p>
+      <span class="go">Open the map →</span>
+    </a>
+    <a class="topic" href="history.html">
+      <span class="k">1874</span>
+      <h2>History</h2>
+      <p>1874 to today, plus all-time Grand Slam leaders.</p>
+      <span class="go">Read the timeline →</span>
+    </a>
+    <a class="topic" href="archive.html">
+      <span class="k">2000–</span>
+      <h2>Past Champions</h2>
+      <p>Every Grand Slam singles champion since 2000.</p>
+      <span class="go">Browse the archive →</span>
+    </a>
+    <a class="topic" href="rackets.html">
+      <span class="k" id="kRackets">11</span>
+      <h2>Rackets</h2>
+      <p>Specs of popular frames and who plays them.</p>
+      <span class="go">Compare frames →</span>
+    </a>
+    <a class="topic" href="strings.html">
+      <span class="k">24 kg</span>
+      <h2>Strings</h2>
+      <p>String types compared, with a tension converter.</p>
+      <span class="go">Choose a string →</span>
+    </a>
+    <a class="topic" href="players.html">
+      <span class="k">Top 10</span>
+      <h2>Players</h2>
+      <p>Top 10 profiles and a page for every player in the covered draws.</p>
+      <span class="go">Meet the players →</span>
+    </a>
+    <a class="topic" href="stats.html">
+      <span class="k" id="kPts">11,000</span>
+      <h2>Statistics</h2>
+      <p>Ranking points, titles in covered events and career majors.</p>
+      <span class="go">See the numbers →</span>
+    </a>
+  </nav>
+</section>
+
 
 <script>
 $('#asof').textContent = utc(FETCHED);
@@ -104,7 +108,9 @@ $('#board').innerHTML = ['ao','rg','wim','uso'].map(id => T.find(t => t.id === i
 </div>`).join('');
 
 const LIVE = [...T].filter(t => status(t) === 'live').sort((a,b) => LV[b.lv].r - LV[a.lv].r || d(a.e) - d(b.e));
+let nowTour = 'all';
 function renderNow(tour){
+  nowTour = tour;
   const left = t => Math.round((d(t.e) - TODAY) / 864e5);
   const list = LIVE.filter(t => tour === 'all' || t.tour === 'BOTH' || t.tour === tour);
   $('#nowSub').textContent = `${list.length} tournament${list.length === 1 ? '' : 's'} in progress`;
@@ -128,6 +134,7 @@ if (LIVE.length){
   renderNow('all');
 }
 
+function renderRecent(){
 const sorted = [...T].sort((a,b) => d(a.s) - d(b.s));
 const done = sorted.filter(t => status(t) === 'done').slice(-3);
 const next = sorted.filter(t => status(t) !== 'done').slice(0, 3);
@@ -136,4 +143,7 @@ $('#recent').innerHTML = [...done, ...next].map(t => {
   const sub = t.res[0] ? `Won by ${t.res.map(r => r.w).join(' · ')}` : `${range(t)} · ${t.city}`;
   return `<a href="${tHref(t)}"><i class="dot ${t.sf}"></i><span><span class="nm">${t.name}</span><br><span class="sub">${sub}</span></span><span class="st ${st}">${ST[st]}</span></a>`;
 }).join('');
+}
+renderRecent();
+liveWatch(() => { if (LIVE.length) renderNow(nowTour); renderRecent(); });
 </script>

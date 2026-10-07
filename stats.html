@@ -5,14 +5,14 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>2026 Tennis Statistics: Ranking Points, Titles &amp; Majors | Court Atlas</title>
 <meta name="description" content="Charts of 2026 ATP and WTA ranking points, title counts across covered tournaments and career Grand Slam titles for the top 10.">
-<link rel="canonical" href="https://winterai-newchapter.github.io/court-atlas/stats.html">
+<link rel="canonical" href="https://winterai-newchapter.github.io/Court-Atlas/stats.html">
 <meta property="og:site_name" content="Court Atlas">
 <meta property="og:type" content="website">
 <meta property="og:title" content="2026 Tennis Statistics: Ranking Points, Titles &amp; Majors | Court Atlas">
 <meta property="og:description" content="Charts of 2026 ATP and WTA ranking points, title counts across covered tournaments and career Grand Slam titles for the top 10.">
-<meta property="og:url" content="https://winterai-newchapter.github.io/court-atlas/stats.html">
+<meta property="og:url" content="https://winterai-newchapter.github.io/Court-Atlas/stats.html">
 <meta name="twitter:card" content="summary">
-<script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://winterai-newchapter.github.io/court-atlas/"},{"@type":"ListItem","position":2,"name":"Statistics","item":"https://winterai-newchapter.github.io/court-atlas/stats.html"}]}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://winterai-newchapter.github.io/Court-Atlas/"},{"@type":"ListItem","position":2,"name":"Statistics","item":"https://winterai-newchapter.github.io/Court-Atlas/stats.html"}]}</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;800&family=Public+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap">
@@ -52,7 +52,7 @@ function render(v){
   const tours = v === 'all' ? ['ATP','WTA'] : [v];
   $('#statsGrid').innerHTML = tours.map(t =>
       panel(`pts${t}`, `${t} ranking points`, `Top 10, rankings of Sept 28, 2026`)
-    + panel(`ttl${t}`, `${t} 2026 titles`, `Counted across tournaments covered on this site (Slams, 1000s, 500s and some 250s)`)).join('')
+    + panel(`ttl${t}`, `${t} titles in covered events`, `Only the ${T.length} tournaments this site covers (Slams, 1000s, 500s and some 250s), not the full 2026 season`)).join('')
     + panel('slamChart', `Career Grand Slam singles titles, current top 10${tours.length > 1 ? 's' : ''}`, `Through the 2026 US Open, ${tours.length > 1 ? 'ATP and WTA combined' : TOURNAME[v]} · <a href="archive.html">every champion since 2000 →</a>`, true);
   tours.forEach(tour => {
     hbars($(`#pts${tour}`), PLAYERS[tour].map(p => ({n:`${p.rk}. ${p.n}`, v:p.pts, tip:`${p.n} · ${p.co} · ${p.pts.toLocaleString('en-US')} pts`})), 12000, [0,3000,6000,9000,12000], '');
@@ -75,6 +75,6 @@ render('all');
   <a class="next" href="index.html"><small>Back to →</small><b>Home</b></a>
 </nav>
 </main>
-<div class="wrap"><footer><p>Data: draws, scores and finals from Wikipedia’s 2026 tournament pages, fetched Oct 6, 2026, 01:44 UTC (each section links its page and revision time). Rankings from Wikipedia’s ATP and WTA rankings pages, September 28, 2026; profiles, history and equipment compiled October 5, 2026. Some ATP 250 and 500 dates are by tournament week, and events from October on may change. Win probabilities are an Elo estimate from covered matches, <a href="players.html#method">explained here</a>. Racket specs are manufacturer figures.</p></footer></div>
+<div class="wrap"><footer><p>Data: Wikipedia and manufacturer specs. Win probabilities are an <a href="players.html#method">Elo estimate</a>.</p></footer></div>
 </body>
 </html>

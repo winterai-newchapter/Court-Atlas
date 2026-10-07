@@ -1,15 +1,16 @@
 // Builds the Court Atlas site from src/ into the workspace root.
 // Topic pages come from src/pages/; tournament/<id>.html and player/<slug>.html are rendered here with src/views.js.
 // Also writes sitemap.xml, robots.txt and .artifact/index.html, a head-less copy of the home page for publishing as a claude.ai artifact.
-// Refresh draws first with: node scripts/fetch-draws.mjs
+// Refresh draws first with: node scripts/fetch-draws.mjs (.github/workflows/refresh.yml does both every 15 minutes).
+// Pages with poll:true, and the pages of tournaments in progress, also refresh results in the browser with live.js.
 import fs from 'fs';
 const OUT = '.';
 // Canonical origin for <link rel="canonical">, Open Graph and structured data. Change it if the site moves.
-const SITE = 'https://winterai-newchapter.github.io/court-atlas/';
+const SITE = 'https://winterai-newchapter.github.io/Court-Atlas/';
 const BRAND = 'Court Atlas';
 
 const PAGES = [
-  {f:'season',  t:'Season Map', map:true, live:true,
+  {f:'season',  t:'Season Map', map:true, live:true, poll:true,
    title:'2026 Tennis Tournament Map & Results | Court Atlas',
    desc:'Every 2026 ATP and WTA tournament on a world map, with finals, scores, live draws and the next matches of events in progress.'},
   {f:'history', t:'History',
@@ -22,8 +23,8 @@ const PAGES = [
    title:'Tennis Racket Specs Compared: Head Size, Weight, Pattern | Court Atlas',
    desc:'Head size, strung weight and string pattern for popular Babolat, Head, Wilson, Yonex and Tecnifibre frames, and which pros use them.'},
   {f:'strings', t:'Strings',
-   title:'Tennis Strings Guide & kg–lbs Tension Converter | Court Atlas',
-   desc:'Polyester, natural gut, multifilament, synthetic gut and hybrid strings compared, with a tension converter and gauge chart.'},
+   title:'Which Tennis String Is Right for You? String Finder & Tension Guide | Court Atlas',
+   desc:'Why strings matter as much as your racket: answer six questions to get a string type, gauge and tension for your game, plus when to restring and how to protect your arm.'},
   {f:'players', t:'Players', live:true,
    title:'ATP & WTA Top 10 Players 2026: Profiles, Form & Records | Court Atlas',
    desc:'Profiles of the 2026 ATP and WTA top 10 with recent form, win rate by surface and Elo, plus a page for every player in the covered draws.'},
@@ -33,7 +34,7 @@ const PAGES = [
 ];
 const HOME = {title:'Court Atlas: 2026 ATP & WTA Tennis Season Map, Draws & Results',
   desc:'Follow the 2026 tennis season: a world map of ATP and WTA tournaments, live draws with win probabilities, player form and past champions.'};
-const ASSETS = ['styles.css','data.js','draws.js','common.js','views.js','map.js'];
+const ASSETS = ['styles.css','data.js','draws.js','common.js','views.js','map.js','parse.js','live.js'];
 
 // The same data and view code the browser runs, evaluated here to render static pages
 const V = new Function(['data.js','draws.js','common.js','views.js'].map(f => fs.readFileSync(`src/${f}`, 'utf8')).join('\n;\n')
@@ -47,8 +48,8 @@ const header = (cur, base = '') => `<header class="top"><div class="wrap">
   <a class="brand" href="${base}index.html"><b>Court Atlas</b><span>2026 season</span></a>
   <nav id="nav">${PAGES.map(p => `<a href="${base}${p.f}.html"${p.f === cur ? ' class="on" aria-current="page"' : ''}>${p.t}</a>`).join('')}</nav>
 </div></header>`;
-const footer = base => `<footer><p>Data: draws, scores and finals from Wikipedia’s 2026 tournament pages, fetched ${V.utc(V.FETCHED)} (each section links its page and revision time). Rankings from Wikipedia’s ATP and WTA rankings pages, September 28, 2026; profiles, history and equipment compiled October 5, 2026. Some ATP 250 and 500 dates are by tournament week, and events from October on may change. Win probabilities are an Elo estimate from covered matches, <a href="${base}players.html#method">explained here</a>. Racket specs are manufacturer figures.</p></footer>`;
-const scripts = (p, base) => [p.map && 'map.js', 'data.js', p.live && 'draws.js', 'common.js', p.live && 'views.js']
+const footer = base => `<footer><p>Data: Wikipedia and manufacturer specs. Win probabilities are an <a href="${base}players.html#method">Elo estimate</a>.</p></footer>`;
+const scripts = (p, base) => [p.map && 'map.js', 'data.js', p.live && 'draws.js', 'common.js', p.live && 'views.js', p.poll && 'parse.js', p.poll && 'live.js']
   .filter(Boolean).map(f => `<script src="${base}${f}"></script>`).join('\n');
 
 const attr = s => String(s).replace(/&/g, '&amp;').replace(/"/g, '&quot;');
@@ -99,7 +100,7 @@ const homeBody = `${header('')}
 ${fs.readFileSync('src/pages/index.html','utf8')}
 </main>
 <div class="wrap">${footer('')}</div>`;
-const homeHead = `${FONTS('')}\n${scripts({map:true, live:true}, '')}`;
+const homeHead = `${FONTS('')}\n${scripts({map:true, live:true, poll:true}, '')}`;
 write('index.html', doc({title:HOME.title, desc:HOME.desc, path:'', head:homeHead, body:homeBody, jsonld:[WEBSITE]}));
 fs.mkdirSync('.artifact', {recursive:true});
 fs.writeFileSync('.artifact/index.html', `<title>${BRAND}</title>\n${homeHead}\n${homeBody}\n`);
@@ -134,7 +135,7 @@ ${np}
 <div class="wrap">${footer('')}</div>`}));
 });
 
-// Tournament and player pages: static HTML, no scripts
+// Tournament and player pages: static HTML. A tournament in progress also loads the scripts and re-renders its body as results come in.
 const sub = (cur, crumbs, body) => `${header(cur, '../')}
 <main class="wrap page">
 ${crumbsHtml(crumbs, '../')}
@@ -156,8 +157,12 @@ for (const t of V.T){
     startDate:t.s, endDate:t.e, eventStatus:EVSTATUS, eventAttendanceMode:'https://schema.org/OfflineEventAttendanceMode', description:desc,
     location:{'@type':'Place', name:t.city, address:{'@type':'PostalAddress', addressLocality:t.city, addressCountry:t.co}, geo:{'@type':'GeoCoordinates', latitude:t.lat, longitude:t.lon}},
     ...(Object.keys(t.w || {}).length ? {sameAs:Object.keys(t.w).map(k => V.SRC[`${t.id}/${k}`]?.u).filter(Boolean)} : {})};
-  write(`tournament/${t.id}.html`, doc({title, desc, path:`tournament/${t.id}.html`, head:FONTS('../'), jsonld:[crumbsLd(crumbs), event],
-    body:sub('season', crumbs, V.tournamentBody(t))}));
+  const live = st === 'live' && hasDraw;
+  const body = live ? `<p class="livestamp" id="livestamp" hidden></p>
+<div id="tbody">${V.tournamentBody(t)}</div>
+<script>setBase('../'); liveWatch(() => { $('#tbody').innerHTML = tournamentBody(TBY['${t.id}']); }, '${t.id}');</script>` : V.tournamentBody(t);
+  write(`tournament/${t.id}.html`, doc({title, desc, path:`tournament/${t.id}.html`, jsonld:[crumbsLd(crumbs), event],
+    head:live ? `${FONTS('../')}\n${scripts({live:true, poll:true}, '../')}` : FONTS('../'), body:sub('season', crumbs, body)}));
 }
 for (const s of Object.keys(V.PEOPLE)){
   const name = V.pName(s), top = V.TOP[s], r = V.record(s), tour = V.pTour(s);

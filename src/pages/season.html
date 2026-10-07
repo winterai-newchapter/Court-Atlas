@@ -1,7 +1,8 @@
 <div class="page-head">
   <p class="eyebrow">ATP &amp; WTA · draws updated <span id="asof"></span></p>
   <h1>Season Map</h1>
-  <p>Pick a tournament on the map to see the final, or step through the year month by month. Marker shape shows the surface (● hard, ■ clay, ◆ grass), size shows the tier, hollow markers haven’t been played yet, and pulsing markers are in progress now.</p>
+  <p>Pick a tournament on the map to see who is still in, the next matches and results so far, or the final once it is played. Step through the year month by month. Marker shape shows the surface (● hard, ■ clay, ◆ grass), size shows the tier, hollow markers haven’t been played yet, and pulsing markers are in progress now.</p>
+  <p class="livestamp" id="livestamp" hidden></p>
 </div>
 
 <section>
@@ -174,7 +175,13 @@ function renderDetail(){
   const draws = keys.map(k => {
     const ent = entrants(k), pend = pending(k), tour = k.split('/')[1];
     if (!pend.length) return '';
-    return `<p class="eyebrow">${TOURLABEL[tour]} · ${ent.filter(e => !e.out).length} of ${ent.length} still in</p><div class="preds side">${pend.slice(0, 3).map(predCard).join('')}</div>${pend.length > 3 ? `<a class="slamlink" href="${tHref(t)}#${tour.toLowerCase()}">All ${pend.length} upcoming ${tour} matches →</a>` : ''}`;
+    const alive = ent.filter(e => !e.out), done = MATCHES.filter(m => m.key === k && played(m)).slice(-4).reverse();
+    const ready = pend.filter(m => m.a && m.b);
+    return `<p class="eyebrow">${TOURLABEL[tour]} · ${alive.length} of ${ent.length} still in</p>
+    <p class="plinks-in">${alive.slice(0, 16).map(e => `${pLink(e.s)}${/^\d+$/.test(e.seed) ? ` <span class="ex">(${esc(e.seed)})</span>` : ''}`).join(', ')}${alive.length > 16 ? ` <a href="${tHref(t)}#${tour.toLowerCase()}">+${alive.length - 16} more</a>` : ''}</p>
+    ${ready.length ? `<h5 class="subh">Next matches</h5><div class="preds side">${ready.slice(0, 3).map(predCard).join('')}</div>` : ''}
+    ${done.length ? `<h5 class="subh">Latest results</h5><ul class="mlist">${done.map(m => matchLine(m)).join('')}</ul>` : ''}
+    <a class="slamlink" href="${tHref(t)}#${tour.toLowerCase()}">Full ${tour} draw: ${pend.length} matches to play, ${MATCHES.filter(m => m.key === k && played(m)).length} played →</a>`;
   }).join('');
   const srcs = [...new Set([...keys, ...t.res.map(r => `${t.id}/${r.t === 'Mixed' ? 'Team' : r.t}`)])].map(srcLine);
   box.innerHTML = `<p class="eyebrow">${t.city}, ${t.co}</p><h4>${t.name}</h4>
@@ -214,4 +221,5 @@ if (status(selT) === 'live'){
   }
 }
 renderAll();
+liveWatch(() => renderAll(false));
 </script>

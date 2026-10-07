@@ -1,3 +1,3 @@
 User-agent: *
 Allow: /
-Sitemap: https://winterai-newchapter.github.io/court-atlas/sitemap.xml
+Sitemap: https://winterai-newchapter.github.io/Court-Atlas/sitemap.xml

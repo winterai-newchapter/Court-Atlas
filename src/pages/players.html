@@ -41,7 +41,7 @@ function render(){
     const w = finals(p).filter(x => x.won).length, r = record(slugify(p.n));
     return `<button type="button" class="pc" aria-pressed="${p.n === pSel}" data-k="${p.n}">
       <div class="ptop"><div><h3>${p.n}</h3><div class="en">${p.co}</div></div><div class="rank">${p.rk}</div></div>
-      <div class="kv"><span>Points<b>${p.pts.toLocaleString('en-US')}</b></span><span>2026 W–L<b>${r.w}–${r.l}</b></span><span>Titles<b>${w}</b></span></div>
+      <div class="kv"><span>Points<b>${p.pts.toLocaleString('en-US')}</b></span><span>W–L (covered)<b>${r.w}–${r.l}</b></span><span>Titles (covered)<b>${w}</b></span></div>
     </button>`;
   }).join('')}</div>`).join('');
   document.querySelectorAll('.pc').forEach(b => b.onclick = () => { pSel = b.dataset.k; history.replaceState(null, '', '#' + slugify(pSel)); render(); });

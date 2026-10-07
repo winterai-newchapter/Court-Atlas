@@ -21,7 +21,7 @@ function render(v){
   const tours = v === 'all' ? ['ATP','WTA'] : [v];
   $('#statsGrid').innerHTML = tours.map(t =>
       panel(`pts${t}`, `${t} ranking points`, `Top 10, rankings of Sept 28, 2026`)
-    + panel(`ttl${t}`, `${t} 2026 titles`, `Counted across tournaments covered on this site (Slams, 1000s, 500s and some 250s)`)).join('')
+    + panel(`ttl${t}`, `${t} titles in covered events`, `Only the ${T.length} tournaments this site covers (Slams, 1000s, 500s and some 250s), not the full 2026 season`)).join('')
     + panel('slamChart', `Career Grand Slam singles titles, current top 10${tours.length > 1 ? 's' : ''}`, `Through the 2026 US Open, ${tours.length > 1 ? 'ATP and WTA combined' : TOURNAME[v]} · <a href="archive.html">every champion since 2000 →</a>`, true);
   tours.forEach(tour => {
     hbars($(`#pts${tour}`), PLAYERS[tour].map(p => ({n:`${p.rk}. ${p.n}`, v:p.pts, tip:`${p.n} · ${p.co} · ${p.pts.toLocaleString('en-US')} pts`})), 12000, [0,3000,6000,9000,12000], '');

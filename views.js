@@ -3,7 +3,7 @@
 let BASE = '';
 const setBase = b => { BASE = b; };
 const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;'}[c]));
-const slugify = n => n.normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/ł/g, 'l').replace(/ø/g, 'o').replace(/đ/g, 'd')
+const slugify = n => n.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/ł/g, 'l').replace(/ø/g, 'o').replace(/đ/g, 'd')
   .toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 const TBY = Object.fromEntries(T.map(t => [t.id, t]));
 const TOP = {};
@@ -37,19 +37,14 @@ const srcStatic = (links, note) => `<p class="src">Source: ${links.map(([u, l]) 
 /* ---------- matches ---------- */
 const ROUND_ORDER = ['first round','second round','third round','fourth round','quarterfinals','semifinals','final'];
 const rIx = label => { const i = ROUND_ORDER.indexOf(label.toLowerCase()); return i < 0 ? 99 : i; };
+// MATCHES, BYP and ELO are filled by reindex() below, and rebuilt in place when live.js brings in newer draws
 const MATCHES = [];
-for (const [key, dr] of Object.entries(DRAWS)){
-  const [id, tour] = key.split('/'), t = TBY[id];
-  dr.m.forEach(([ri, a, b, w, sc]) => MATCHES.push({key, t, tour, round:dr.rounds[ri], ro:rIx(dr.rounds[ri]), a, b, w, sc, wo:sc === 'w/o'}));
-}
-MATCHES.sort((x, y) => d(x.t.s) - d(y.t.s) || x.t.id.localeCompare(y.t.id) || x.ro - y.ro);
 const played = m => m.w >= 0;
 const counts = m => m.w >= 0 && !m.wo;       // walkovers are listed but never counted
 const winner = m => m.w === 0 ? m.a : m.b;
 const loser = m => m.w === 0 ? m.b : m.a;
 const opp = (m, s) => m.a === s ? m.b : m.a;
 const BYP = {};
-MATCHES.forEach(m => [m.a, m.b].forEach(s => (BYP[s] = BYP[s] || []).push(m)));
 const pMatches = s => BYP[s] || [];
 const pTour = s => (pMatches(s)[0] || {}).tour || (TOP[s] || {}).tour || '';
 
@@ -72,17 +67,36 @@ const ELO = {};
 const eloOf = s => ELO[s] || (ELO[s] = {r:ELO0, n:0, sf:{hard:{r:ELO0, n:0}, clay:{r:ELO0, n:0}, grass:{r:ELO0, n:0}}});
 const expect = (ra, rb) => 1 / (1 + Math.pow(10, (rb - ra) / 400));
 const kf = n => 250 / Math.pow(n + 5, .4);
-MATCHES.filter(counts).forEach(m => {
-  const W = eloOf(winner(m)), L = eloOf(loser(m));
-  const step = (a, b) => { const e = expect(a.r, b.r), ka = kf(a.n), kb = kf(b.n); a.r += ka * (1 - e); b.r -= kb * (1 - e); a.n++; b.n++; };
-  step(W, L); step(W.sf[m.t.sf], L.sf[m.t.sf]);
-});
+const eloStep = (a, b) => { const e = expect(a.r, b.r), ka = kf(a.n), kb = kf(b.n); a.r += ka * (1 - e); b.r -= kb * (1 - e); a.n++; b.n++; };
 const blended = (s, sf) => { const e = eloOf(s); return .5 * e.r + .5 * e.sf[sf].r; };
 function predict(a, b, sf){
   const ra = blended(a, sf), rb = blended(b, sf);
   return {p:expect(ra, rb), ra, rb, ea:eloOf(a), eb:eloOf(b), thin:eloOf(a).n < 8 || eloOf(b).n < 8};
 }
 const eloRank = tour => Object.keys(ELO).filter(s => pTour(s) === tour && ELO[s].n >= 10).sort((x, y) => ELO[y].r - ELO[x].r);
+
+function reindex(){
+  MATCHES.length = 0;
+  for (const k in BYP) delete BYP[k];
+  for (const k in ELO) delete ELO[k];
+  for (const [key, dr] of Object.entries(DRAWS)){
+    const [id, tour] = key.split('/'), t = TBY[id];
+    dr.m.forEach(([ri, a, b, w, sc]) => MATCHES.push({key, t, tour, round:dr.rounds[ri], ro:rIx(dr.rounds[ri]), a, b, w, sc, wo:sc === 'w/o'}));
+    // A final decided in the draw counts as the result even before it is entered by hand in data.js
+    const fin = dr.m.find(([ri, , , w]) => w >= 0 && dr.rounds[ri].toLowerCase() === 'final');
+    if (fin && !t.res.some(r => r.t === tour)){
+      const [, a, b, w, sc] = fin;
+      t.res.push({t:tour, w:pName(w === 0 ? a : b), r:pName(w === 0 ? b : a), sc});
+    }
+  }
+  MATCHES.sort((x, y) => d(x.t.s) - d(y.t.s) || x.t.id.localeCompare(y.t.id) || x.ro - y.ro);
+  MATCHES.forEach(m => [m.a, m.b].forEach(s => (BYP[s] = BYP[s] || []).push(m)));
+  MATCHES.filter(counts).forEach(m => {
+    const W = eloOf(winner(m)), L = eloOf(loser(m));
+    eloStep(W, L); eloStep(W.sf[m.t.sf], L.sf[m.t.sf]);
+  });
+}
+reindex();
 
 /* ---------- draw state ---------- */
 const drawKeys = t => Object.keys(DRAWS).filter(k => k.startsWith(t.id + '/'));
