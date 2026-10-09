@@ -118,7 +118,47 @@ const STRINGS = [
  {k:'gut',pr:4,usd:[35,50],t:'Natural gut',ex:'Babolat VS Touch, Luxilon Natural Gut',p:5,c:3,s:3,cf:5,d:2,kg:[24,26],who:'Players who want the best feel and arm comfort and don’t mind the price.',note:'Made from cow intestine. Holds tension best of any string and costs the most.'},
  {k:'soft',pr:2,usd:[10,18],t:'Soft polyester',ex:'Babolat RPM Soft, Solinco Hyper-G Soft',p:3,c:4,s:4,cf:2,d:4,kg:[21,23],who:'Club players with fast topspin swings who break softer strings.',note:'A softer poly that keeps most of the spin and control with less shock.'},
  {k:'poly',pr:2,usd:[8,20],t:'Polyester (mono)',ex:'Luxilon ALU Power, Babolat RPM Blast, Solinco Hyper-G',p:2,c:5,s:5,cf:1,d:5,kg:[21,23],who:'Strong, advanced players with long, fast swings and healthy arms.',note:'Used by most tour players. Loses tension quickly, so it needs frequent restringing.'},
- {k:'hybrid',pr:3,usd:[10,30],t:'Hybrid',ex:'Poly mains + multifilament or gut crosses',p:4,c:4,s:4,cf:4,d:4,kg:[22,24],who:'Players who want poly’s control and spin with a softer feel.',note:'Different strings in the mains and crosses to combine their strengths.'},
+ {k:'hybrid',pr:3,usd:[10,30],t:'Hybrid',ex:'Poly mains + multifilament crosses, or gut mains + poly crosses (Federer’s setup)',p:4,c:4,s:4,cf:4,d:4,kg:[22,24],who:'Players who want poly’s control and spin with a softer feel.',note:'Different strings in the mains and crosses to combine their strengths.'},
+];
+
+/* String library for the Strings guide and String Finder.
+   ty: poly | multi | gut | syn | hybrid · tier: relative price per set, 1 (cheapest) to 4 · g: gauges in mm sold by the maker
+   tags drive the String Finder: spin, control, power, comfort, durability, feel, value. Ratings are editorial, not lab data. */
+const STRING_DB = [
+ {n:'Babolat RPM Blast', b:'Babolat', ty:'poly', sh:'Octagonal', g:[1.20,1.25,1.30,1.35], tier:2, tags:['spin','control','durability'], note:'Eight-sided poly built for heavy topspin; associated with Rafael Nadal. Firm, so not for sore arms.'},
+ {n:'Luxilon ALU Power', b:'Luxilon', ty:'poly', sh:'Round, smooth', g:[1.25,1.30], tier:3, tags:['control','feel','power'], note:'The tour benchmark poly: crisp, precise and livelier than most. Loses tension fast, so restring often.'},
+ {n:'Solinco Hyper-G', b:'Solinco', ty:'poly', sh:'Square', g:[1.20,1.25,1.30], tier:2, tags:['spin','control','value'], note:'Square co-poly with strong bite on the ball at a mid price. A popular step up from RPM Blast.'},
+ {n:'Solinco Tour Bite', b:'Solinco', ty:'poly', sh:'Square, sharp edges', g:[1.20,1.25,1.30], tier:2, tags:['spin','control','durability'], note:'One of the most aggressive spin strings. Very firm: best for big swingers with healthy arms.'},
+ {n:'Yonex Poly Tour Pro', b:'Yonex', ty:'poly', sh:'Round', g:[1.20,1.25,1.30], tier:2, tags:['comfort','control','feel'], note:'One of the softer co-polys. A good first poly or a choice for players who find most poly harsh.'},
+ {n:'Babolat RPM Soft', b:'Babolat', ty:'poly', sh:'Octagonal', g:[1.25,1.30], tier:2, tags:['spin','comfort'], note:'A softer take on RPM Blast for club players who want spin without as much stiffness.'},
+ {n:'Head Lynx Tour', b:'Head', ty:'poly', sh:'Hexagonal', g:[1.25,1.30], tier:2, tags:['spin','control','value'], note:'Six-sided co-poly with good spin and tension holding for the price.'},
+ {n:'Tecnifibre Razor Code', b:'Tecnifibre', ty:'poly', sh:'Round', g:[1.20,1.25,1.30], tier:2, tags:['control','durability'], note:'A low-power, control-first co-poly that holds tension well for a poly.'},
+ {n:'Wilson NXT', b:'Wilson', ty:'multi', sh:'Round', g:[1.24,1.30], tier:2, tags:['comfort','power','feel'], note:'A long-standing multifilament: soft, powerful and easy on the elbow.'},
+ {n:'Tecnifibre X-One Biphase', b:'Tecnifibre', ty:'multi', sh:'Round', g:[1.24,1.30], tier:3, tags:['comfort','power','feel'], note:'Premium multifilament often described as the closest thing to gut. Frays and breaks sooner than poly.'},
+ {n:'Tecnifibre NRG2', b:'Tecnifibre', ty:'multi', sh:'Round', g:[1.24,1.32], tier:3, tags:['comfort','power'], note:'A very soft multifilament for players with arm trouble or a short, compact swing.'},
+ {n:'Babolat VS Touch', b:'Babolat', ty:'gut', sh:'Round', g:[1.25,1.30,1.35], tier:4, tags:['comfort','power','feel'], note:'Natural gut: the most comfortable string with the best tension holding. Expensive and dislikes moisture.'},
+ {n:'Wilson Natural Gut', b:'Wilson', ty:'gut', sh:'Round', g:[1.25,1.30], tier:4, tags:['comfort','power','feel'], note:'Natural gut used in Wilson’s Champion’s Choice hybrid. Best for arm-sensitive players who can afford it.'},
+ {n:'Prince Synthetic Gut Duraflex', b:'Prince', ty:'syn', sh:'Round', g:[1.25,1.30], tier:1, tags:['value','comfort'], note:'The classic budget all-rounder. Fine for beginners, juniors and players who rarely break strings.'},
+ {n:'Gamma Synthetic Gut', b:'Gamma', ty:'syn', sh:'Round', g:[1.25,1.30], tier:1, tags:['value'], note:'Cheap, consistent, available everywhere. A sensible default for a first restring.'},
+ {n:'Wilson Champion’s Choice', b:'Wilson', ty:'hybrid', sh:'Gut + textured poly', g:[1.30,1.25], tier:4, tags:['feel','control','comfort'], note:'Natural gut mains with Luxilon ALU Power Rough crosses: the hybrid Roger Federer used.'},
+];
+const STRING_TYPE = {poly:'Polyester', multi:'Multifilament', gut:'Natural gut', syn:'Synthetic gut', hybrid:'Hybrid'};
+
+/* Shopping links. Leave tags empty until an affiliate account is approved: links still work, they just earn nothing.
+   amazonTag: your Associates tracking ID (e.g. 'tennisroam-20').
+   shops: extra retailers; {q} is replaced with the URL-encoded string name. Example after approval through an affiliate network:
+   {name:'Tennis Express', url:'https://YOUR-NETWORK-DEEPLINK?url=https%3A%2F%2Fwww.tennisexpress.com%2Fsearch%3Fq%3D{q}'} */
+const SHOP = {amazonTag:'', shops:[]};
+
+/* Questions for the Strings FAQ, rendered as HTML and as FAQPage structured data */
+const STRING_FAQ = [
+ ['What tennis string should a beginner use?', 'A synthetic gut or a multifilament at a mid tension, around 24–25 kg (53–55 lbs). Both are cheap or comfortable enough that you can learn what you like before spending more. Avoid stiff polyester until your swing is long and fast enough to use it.'],
+ ['Is polyester string bad for your arm?', 'It can be. Polyester is the stiffest common string and goes dead quickly, which sends more shock to the arm. If you have elbow, wrist or shoulder pain, switch to multifilament or natural gut, or at least use a soft co-poly strung 1–2 kg lower.'],
+ ['How often should I restring my racket?', 'A common rule is to restring as many times a year as you play per week, so three times a week means about three restrings a year. Polyester loses tension faster than other materials, so many poly users restring every 15–20 hours of play even if the string has not broken.'],
+ ['What tension should I string at?', 'Start in the middle of the range printed on your racket, often 23–26 kg (50–58 lbs). Go 1–2 kg lower for more power, comfort and a softer feel, especially with polyester. Go higher only if the ball is flying long and your arm feels fine.'],
+ ['What is the difference between 16 and 17 gauge?', '16 gauge is about 1.26–1.33 mm and 17 gauge about 1.18–1.25 mm. Thinner 17 gauge strings bite the ball more and feel livelier, but they break sooner. If you break strings often, go thicker.'],
+ ['What is a hybrid string setup?', 'Using one string in the mains (the long, vertical strings) and another in the crosses. Common setups pair a durable, spin-friendly poly in the mains with a softer multifilament or gut in the crosses for comfort, or the reverse, as Roger Federer did with gut mains and poly crosses.'],
+ ['Do shaped strings really add spin?', 'Shaped and textured polys can grip the ball a little more, but most extra spin comes from strings snapping back into place after sliding, which smooth polys also do well. String material, tension and an open string pattern matter more than shape.'],
 ];
 
 /* Grand Slam singles champions 2000–2025, in order [Australian Open, Roland Garros, Wimbledon, US Open]. null = not held. 2026 comes from T. */

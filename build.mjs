@@ -24,8 +24,8 @@ const PAGES = [
    title:'Tennis Racket Specs Compared: Head Size, Weight, Pattern | Court Atlas',
    desc:'Head size, strung weight and string pattern for popular Babolat, Head, Wilson, Yonex and Tecnifibre frames, and which pros use them.'},
   {f:'strings', t:'Strings',
-   title:'Which Tennis String Is Right for You? String Finder & Tension Guide | Court Atlas',
-   desc:'Why strings matter as much as your racket: answer six questions to get a string type, gauge and tension for your game, plus when to restring and how to protect your arm.'},
+   title:'Which Tennis String Is Right for You? String Finder, Tension & Best Strings | Court Atlas',
+   desc:'Answer seven questions to get a string type, gauge and tension for your game, then compare popular strings, hybrids and gauges, and learn when to restring and how to protect your arm.'},
   {f:'players', t:'Players', live:true,
    title:'ATP & WTA Top 10 Players 2026: Profiles, Form & Records | Court Atlas',
    desc:'Profiles of the 2026 ATP and WTA top 10 with recent form, win rate by surface and Elo, plus a page for every player in the covered draws.'},
@@ -42,7 +42,7 @@ const asset = (base, f) => `${base}${f}?v=${VER[f]}`;
 
 // The same data and view code the browser runs, evaluated here to render static pages
 const V = new Function(['data.js','draws.js','common.js','views.js'].map(f => fs.readFileSync(`src/${f}`, 'utf8')).join('\n;\n')
-  + '\nreturn {T, LV, SF, PEOPLE, DRAWS, SRC, FETCHED, TOP, MATCHES, setBase, methodNote, tournamentBody, playerBody, status, range, pTour, record, esc, utc, pName, pWiki, drawKeys};')();
+  + '\nreturn {STRING_DB, STRING_TYPE, STRING_FAQ, buyLinks, affNote, T, LV, SF, PEOPLE, DRAWS, SRC, FETCHED, TOP, MATCHES, setBase, methodNote, tournamentBody, playerBody, status, range, pTour, record, esc, utc, pName, pWiki, drawKeys};')();
 
 const FONTS = base => `<link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -114,9 +114,15 @@ const byTour = tour => Object.keys(V.PEOPLE).filter(s => V.pTour(s) === tour).so
 const allPlayers = ['ATP','WTA'].map(tour => `<details class="round allp"><summary>${tour === 'ATP' ? 'ATP men' : 'WTA women'} <span class="ex">${byTour(tour).length} players</span></summary><ul class="plinks">${byTour(tour).map(s => `<li><a class="pl" href="player/${s}.html">${V.esc(V.pName(s))}</a></li>`).join('')}</ul></details>`).join('');
 
 // Topic pages
+// String library table and FAQ, rendered as static HTML so search engines and AI crawlers can read them
+const stringLib = `<div class="panel tablebox" style="padding:8px 14px"><table id="lib"><thead><tr><th>String</th><th>Type</th><th>Shape</th><th class="n">Gauges (mm)</th><th>Price</th><th>Good for</th><th>Shop</th></tr></thead><tbody>${V.STRING_DB.map(x => `<tr data-ty="${x.ty}"><td><b>${V.esc(x.n)}</b><div class="ex">${V.esc(x.note)}</div></td><td>${V.STRING_TYPE[x.ty]}</td><td>${V.esc(x.sh)}</td><td class="n">${x.g.map(g => g.toFixed(2)).join(' / ')}</td><td class="num">${'$'.repeat(x.tier)}</td><td>${x.tags.map(t => `<span class="chip">${t}</span>`).join(' ')}</td><td class="buys">${V.buyLinks(x.n)}</td></tr>`).join('')}</tbody></table></div>`;
+const stringFaq = V.STRING_FAQ.map(([q, a]) => `<details class="round faq"><summary>${V.esc(q)}</summary><p>${V.esc(a)}</p></details>`).join('');
+const fill = src => src.replace('<!--STRING_LIB-->', stringLib).replace('<!--STRING_FAQ-->', stringFaq).replace(/<!--AFF_NOTE-->/g, V.affNote() ? V.affNote() + ' ' : '');
 const pageLd = {
   season: () => ({'@context':'https://schema.org', '@type':'ItemList', name:'2026 tennis tournaments',
     itemListElement: V.T.map((t, i) => ({'@type':'ListItem', position:i + 1, url:`${SITE}tournament/${t.id}.html`, name:t.name}))}),
+  strings: () => ({'@context':'https://schema.org', '@type':'FAQPage',
+    mainEntity: V.STRING_FAQ.map(([q, a]) => ({'@type':'Question', name:q, acceptedAnswer:{'@type':'Answer', text:a}}))}),
   players: () => ({'@context':'https://schema.org', '@type':'ItemList', name:'ATP and WTA top 10, September 28, 2026',
     itemListElement: Object.keys(V.TOP).map((s, i) => ({'@type':'ListItem', position:i + 1, url:`${SITE}player/${s}.html`, name:V.TOP[s].n}))}),
 };
@@ -127,7 +133,7 @@ PAGES.forEach((p, i) => {
   ${next ? `<a class="next" href="${next.f}.html"><small>Next →</small><b>${next.t}</b></a>` : `<a class="next" href="index.html"><small>Back to →</small><b>Home</b></a>`}
 </nav>`;
   const crumbs = [['Home', ''], [p.t, `${p.f}.html`]];
-  const src = fs.readFileSync(`src/pages/${p.f}.html`, 'utf8').replace('<!--ALL_PLAYERS-->', allPlayers).replace('<!--METHOD-->', V.methodNote());
+  const src = fill(fs.readFileSync(`src/pages/${p.f}.html`, 'utf8').replace('<!--ALL_PLAYERS-->', allPlayers).replace('<!--METHOD-->', V.methodNote()));
   write(`${p.f}.html`, doc({title:p.title, desc:p.desc, path:`${p.f}.html`, head:`${FONTS('')}\n${scripts(p, '')}`,
     jsonld:[crumbsLd(crumbs), ...(pageLd[p.f] ? [pageLd[p.f]()] : [])],
     body:`${header(p.f)}

@@ -45,3 +45,15 @@ function segInit(id, cb){
     cb(b.dataset.v);
   }));
 }
+
+/* Shopping links for a string or other gear name, driven by SHOP in data.js */
+function buyLinks(name){
+  if (typeof SHOP === 'undefined') return '';
+  const q = encodeURIComponent(name), paid = !!SHOP.amazonTag;
+  const amz = `https://www.amazon.com/s?k=${encodeURIComponent(name + ' tennis string')}${paid ? `&tag=${encodeURIComponent(SHOP.amazonTag)}` : ''}`;
+  const rel = paid ? 'sponsored nofollow noopener' : 'nofollow noopener';
+  return [...SHOP.shops.map(s => `<a class="buy" rel="sponsored nofollow noopener" target="_blank" href="${s.url.replace('{q}', q)}">${s.name}</a>`),
+    `<a class="buy" rel="${rel}" target="_blank" href="${amz}">Amazon</a>`].join('');
+}
+const affNote = () => (typeof SHOP !== 'undefined' && (SHOP.amazonTag || SHOP.shops.length))
+  ? 'Shop links are affiliate links: Court Atlas may earn a commission at no extra cost to you. Recommendations are not paid for.' : '';
