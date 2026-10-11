@@ -42,7 +42,7 @@ const asset = (base, f) => `${base}${f}?v=${VER[f]}`;
 
 // The same data and view code the browser runs, evaluated here to render static pages
 const V = new Function(['data.js','draws.js','common.js','views.js'].map(f => fs.readFileSync(`src/${f}`, 'utf8')).join('\n;\n')
-  + '\nreturn {STRING_DB, STRING_TYPE, STRING_FAQ, buyLinks, affNote, T, LV, SF, PEOPLE, DRAWS, SRC, FETCHED, TOP, MATCHES, setBase, methodNote, tournamentBody, playerBody, status, range, pTour, record, esc, utc, pName, pWiki, drawKeys};')();
+  + '\nreturn {STRING_DB, STRING_TYPE, STRING_FAQ, buyLinks, affNote, stringSwatch, T, LV, SF, PEOPLE, DRAWS, SRC, FETCHED, TOP, MATCHES, setBase, methodNote, tournamentBody, playerBody, status, range, pTour, record, esc, utc, pName, pWiki, drawKeys};')();
 
 const FONTS = base => `<link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -115,9 +115,10 @@ const allPlayers = ['ATP','WTA'].map(tour => `<details class="round allp"><summa
 
 // Topic pages
 // String library table and FAQ, rendered as static HTML so search engines and AI crawlers can read them
-const stringLib = `<div class="panel tablebox" style="padding:8px 14px"><table id="lib"><thead><tr><th>String</th><th>Type</th><th>Shape</th><th class="n">Gauges (mm)</th><th>Price</th><th>Good for</th><th>Shop</th></tr></thead><tbody>${V.STRING_DB.map(x => `<tr data-ty="${x.ty}"><td><b>${V.esc(x.n)}</b><div class="ex">${V.esc(x.note)}</div></td><td>${V.STRING_TYPE[x.ty]}</td><td>${V.esc(x.sh)}</td><td class="n">${x.g.map(g => g.toFixed(2)).join(' / ')}</td><td class="num">${'$'.repeat(x.tier)}</td><td>${x.tags.map(t => `<span class="chip">${t}</span>`).join(' ')}</td><td class="buys">${V.buyLinks(x.n)}</td></tr>`).join('')}</tbody></table></div>`;
+const stringLib = `<div class="panel tablebox" style="padding:8px 14px"><table id="lib"><thead><tr><th>String</th><th>Type</th><th>Shape</th><th class="n">Gauges (mm)</th><th>Price</th><th>Good for</th><th>Shop</th></tr></thead><tbody>${V.STRING_DB.map(x => `<tr data-ty="${x.ty}"><td><div class="sname">${V.stringSwatch(x)}<div><b>${V.esc(x.n)}</b><div class="ex">${V.esc(x.note)}</div></div></div></td><td>${V.STRING_TYPE[x.ty]}</td><td>${V.esc(x.sh)}</td><td class="n">${x.g.map(g => g.toFixed(2)).join(' / ')}</td><td class="num">${'$'.repeat(x.tier)}</td><td>${x.tags.map(t => `<span class="chip">${t}</span>`).join(' ')}</td><td><div class="buys">${V.buyLinks(x)}</div></td></tr>`).join('')}</tbody></table></div>`;
 const stringFaq = V.STRING_FAQ.map(([q, a]) => `<details class="round faq"><summary>${V.esc(q)}</summary><p>${V.esc(a)}</p></details>`).join('');
-const fill = src => src.replace('<!--STRING_LIB-->', stringLib).replace('<!--STRING_FAQ-->', stringFaq).replace(/<!--AFF_NOTE-->/g, V.affNote() ? V.affNote() + ' ' : '');
+// Function replacers, so a "$$" in the inserted HTML (price tiers) is not read as a replacement pattern
+const fill = src => src.replace('<!--STRING_LIB-->', () => stringLib).replace('<!--STRING_FAQ-->', () => stringFaq).replace(/<!--AFF_NOTE-->/g, () => V.affNote() ? V.affNote() + ' ' : '');
 const pageLd = {
   season: () => ({'@context':'https://schema.org', '@type':'ItemList', name:'2026 tennis tournaments',
     itemListElement: V.T.map((t, i) => ({'@type':'ListItem', position:i + 1, url:`${SITE}tournament/${t.id}.html`, name:t.name}))}),

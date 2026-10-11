@@ -123,32 +123,36 @@ const STRINGS = [
 
 /* String library for the Strings guide and String Finder.
    ty: poly | multi | gut | syn | hybrid · tier: relative price per set, 1 (cheapest) to 4 · g: gauges in mm sold by the maker
-   tags drive the String Finder: spin, control, power, comfort, durability, feel, value. Ratings are editorial, not lab data. */
+   tags drive the String Finder: spin, control, power, comfort, durability, feel, value. Ratings are editorial, not lab data.
+   col: a common colour of the string, [mains, crosses] for a hybrid · pf: cross-section (round | oct | hex | sq) · together they draw the library swatch.
+   img: optional product photo URL; when set it replaces the swatch. Use only images you may publish, e.g. from an approved affiliate feed.
+   tw: Tennis Warehouse product path after tennis-warehouse.com/ · amz: Amazon ASIN. Both point at a single set of one gauge. */
 const STRING_DB = [
- {n:'Babolat RPM Blast', b:'Babolat', ty:'poly', sh:'Octagonal', g:[1.20,1.25,1.30,1.35], tier:2, tags:['spin','control','durability'], note:'Eight-sided poly built for heavy topspin; associated with Rafael Nadal. Firm, so not for sore arms.'},
- {n:'Luxilon ALU Power', b:'Luxilon', ty:'poly', sh:'Round, smooth', g:[1.25,1.30], tier:3, tags:['control','feel','power'], note:'The tour benchmark poly: crisp, precise and livelier than most. Loses tension fast, so restring often.'},
- {n:'Solinco Hyper-G', b:'Solinco', ty:'poly', sh:'Square', g:[1.20,1.25,1.30], tier:2, tags:['spin','control','value'], note:'Square co-poly with strong bite on the ball at a mid price. A popular step up from RPM Blast.'},
- {n:'Solinco Tour Bite', b:'Solinco', ty:'poly', sh:'Square, sharp edges', g:[1.20,1.25,1.30], tier:2, tags:['spin','control','durability'], note:'One of the most aggressive spin strings. Very firm: best for big swingers with healthy arms.'},
- {n:'Yonex Poly Tour Pro', b:'Yonex', ty:'poly', sh:'Round', g:[1.20,1.25,1.30], tier:2, tags:['comfort','control','feel'], note:'One of the softer co-polys. A good first poly or a choice for players who find most poly harsh.'},
- {n:'Babolat RPM Soft', b:'Babolat', ty:'poly', sh:'Octagonal', g:[1.25,1.30], tier:2, tags:['spin','comfort'], note:'A softer take on RPM Blast for club players who want spin without as much stiffness.'},
- {n:'Head Lynx Tour', b:'Head', ty:'poly', sh:'Hexagonal', g:[1.25,1.30], tier:2, tags:['spin','control','value'], note:'Six-sided co-poly with good spin and tension holding for the price.'},
- {n:'Tecnifibre Razor Code', b:'Tecnifibre', ty:'poly', sh:'Round', g:[1.20,1.25,1.30], tier:2, tags:['control','durability'], note:'A low-power, control-first co-poly that holds tension well for a poly.'},
- {n:'Wilson NXT', b:'Wilson', ty:'multi', sh:'Round', g:[1.24,1.30], tier:2, tags:['comfort','power','feel'], note:'A long-standing multifilament: soft, powerful and easy on the elbow.'},
- {n:'Tecnifibre X-One Biphase', b:'Tecnifibre', ty:'multi', sh:'Round', g:[1.24,1.30], tier:3, tags:['comfort','power','feel'], note:'Premium multifilament often described as the closest thing to gut. Frays and breaks sooner than poly.'},
- {n:'Tecnifibre NRG2', b:'Tecnifibre', ty:'multi', sh:'Round', g:[1.24,1.32], tier:3, tags:['comfort','power'], note:'A very soft multifilament for players with arm trouble or a short, compact swing.'},
- {n:'Babolat VS Touch', b:'Babolat', ty:'gut', sh:'Round', g:[1.25,1.30,1.35], tier:4, tags:['comfort','power','feel'], note:'Natural gut: the most comfortable string with the best tension holding. Expensive and dislikes moisture.'},
- {n:'Wilson Natural Gut', b:'Wilson', ty:'gut', sh:'Round', g:[1.25,1.30], tier:4, tags:['comfort','power','feel'], note:'Natural gut used in Wilson’s Champion’s Choice hybrid. Best for arm-sensitive players who can afford it.'},
- {n:'Prince Synthetic Gut Duraflex', b:'Prince', ty:'syn', sh:'Round', g:[1.25,1.30], tier:1, tags:['value','comfort'], note:'The classic budget all-rounder. Fine for beginners, juniors and players who rarely break strings.'},
- {n:'Gamma Synthetic Gut', b:'Gamma', ty:'syn', sh:'Round', g:[1.25,1.30], tier:1, tags:['value'], note:'Cheap, consistent, available everywhere. A sensible default for a first restring.'},
- {n:'Wilson Champion’s Choice', b:'Wilson', ty:'hybrid', sh:'Gut + textured poly', g:[1.30,1.25], tier:4, tags:['feel','control','comfort'], note:'Natural gut mains with Luxilon ALU Power Rough crosses: the hybrid Roger Federer used.'},
+ {n:'Babolat RPM Blast', b:'Babolat', ty:'poly', sh:'Octagonal', g:[1.20,1.25,1.30,1.35], tier:2, tags:['spin','control','durability'], note:'Eight-sided poly built for heavy topspin; associated with Rafael Nadal. Firm, so not for sore arms.', col:['#26272b'], pf:'oct', tw:'Babolat_RPM_Blast_17_125_String/descpageACBAB-BRPMB17.html', amz:'B00CIYKVMS'},
+ {n:'Luxilon ALU Power', b:'Luxilon', ty:'poly', sh:'Round, smooth', g:[1.25,1.30], tier:3, tags:['control','feel','power'], note:'The tour benchmark poly: crisp, precise and livelier than most. Loses tension fast, so restring often.', col:['#b8bdc3'], pf:'round', tw:'Luxilon_ALU_Power_16L_125_String/descpageACWILSON-ALUSTR.html', amz:'B002GUIZSQ'},
+ {n:'Solinco Hyper-G', b:'Solinco', ty:'poly', sh:'Square', g:[1.20,1.25,1.30], tier:2, tags:['spin','control','value'], note:'Square co-poly with strong bite on the ball at a mid price. A popular step up from RPM Blast.', col:['#3fae49'], pf:'sq', tw:'Solinco_Hyper-G_16L_125_String/descpageACSOLINCO-SHG16LG.html', amz:'B0170OYCPC'},
+ {n:'Solinco Tour Bite', b:'Solinco', ty:'poly', sh:'Square, sharp edges', g:[1.20,1.25,1.30], tier:2, tags:['spin','control','durability'], note:'One of the most aggressive spin strings. Very firm: best for big swingers with healthy arms.', col:['#c4c8cd'], pf:'sq', tw:'Solinco_Tour_Bite_16_130_String/descpageACSOLINCO-STB16S.html', amz:'B003TWL2CG'},
+ {n:'Yonex Poly Tour Pro', b:'Yonex', ty:'poly', sh:'Round', g:[1.20,1.25,1.30], tier:2, tags:['comfort','control','feel'], note:'One of the softer co-polys. A good first poly or a choice for players who find most poly harsh.', col:['#e3df2c'], pf:'round', tw:'Yonex_POLYTOUR_PRO_16L_125_String/descpageACYONEX-YPTP125.html', amz:'B00JG99FPW'},
+ {n:'Babolat RPM Soft', b:'Babolat', ty:'poly', sh:'Octagonal', g:[1.25,1.30], tier:2, tags:['spin','comfort'], note:'A softer take on RPM Blast for club players who want spin without as much stiffness.', col:['#8b9097'], pf:'oct', tw:'Babolat_RPM_Soft_17_125_String/descpageACBAB-RPMSF17.html', amz:'B0B76SRHVT'},
+ {n:'Head Lynx Tour', b:'Head', ty:'poly', sh:'Hexagonal', g:[1.25,1.30], tier:2, tags:['spin','control','value'], note:'Six-sided co-poly with good spin and tension holding for the price.', col:['#cdb88a'], pf:'hex', tw:'Head_Lynx_Tour_17_125_String/descpageACHEAD-LTR17.html', amz:'B08NHLR8K8'},
+ {n:'Tecnifibre Razor Code', b:'Tecnifibre', ty:'poly', sh:'Round', g:[1.20,1.25,1.30], tier:2, tags:['control','durability'], note:'A low-power, control-first co-poly that holds tension well for a poly.', col:['#f2f2ee'], pf:'round', tw:'Tecnifibre_Razor_Code_16_130_String_White/descpageACTFUSA-TFRC16WH.html', amz:'B07YHZM1MD'},
+ {n:'Wilson NXT', b:'Wilson', ty:'multi', sh:'Round', g:[1.24,1.30], tier:2, tags:['comfort','power','feel'], note:'A long-standing multifilament: soft, powerful and easy on the elbow.', col:['#eadfbf'], pf:'round', tw:'Wilson_NXT_17_124_String_Natural/descpageACWILSON-NXT17.html', amz:'B015TJ1W6M'},
+ {n:'Tecnifibre X-One Biphase', b:'Tecnifibre', ty:'multi', sh:'Round', g:[1.24,1.30], tier:3, tags:['comfort','power','feel'], note:'Premium multifilament often described as the closest thing to gut. Frays and breaks sooner than poly.', col:['#e1c98f'], pf:'round', tw:'Tecnifibre_X-One_Biphase_17_124_String_/descpageACTFUSA-X117.html', amz:'B00EB5T2WM'},
+ {n:'Tecnifibre NRG2', b:'Tecnifibre', ty:'multi', sh:'Round', g:[1.24,1.32], tier:3, tags:['comfort','power'], note:'A very soft multifilament for players with arm trouble or a short, compact swing.', col:['#ece3c6'], pf:'round', tw:'Tecnifibre_NRG2_16_132_String_Natural/descpageACTFUSA-NRG16.html', amz:'B07Y6SCHTN'},
+ {n:'Babolat VS Touch', b:'Babolat', ty:'gut', sh:'Round', g:[1.25,1.30,1.35], tier:4, tags:['comfort','power','feel'], note:'Natural gut: the most comfortable string with the best tension holding. Expensive and dislikes moisture.', col:['#d6b264'], pf:'round', tw:'Babolat_Touch_VS_Natural_Gut_16_130_String/descpageACBAB-BNG16.html', amz:'B081214B2N'},
+ {n:'Wilson Natural Gut', b:'Wilson', ty:'gut', sh:'Round', g:[1.25,1.30], tier:4, tags:['comfort','power','feel'], note:'Natural gut used in Wilson’s Champion’s Choice hybrid. Best for arm-sensitive players who can afford it.', col:['#dcbf7c'], pf:'round', tw:'Wilson_Natural_Gut_16_130_String/descpageACWILSON-WNATY16.html', amz:'B01MRAISSI'},
+ {n:'Prince Synthetic Gut Duraflex', b:'Prince', ty:'syn', sh:'Round', g:[1.25,1.30], tier:1, tags:['value','comfort'], note:'The classic budget all-rounder. Fine for beginners, juniors and players who rarely break strings.', col:['#f3f1ea'], pf:'round', tw:'Prince_Synthetic_Gut_17_125_Duraflex_String/descpageACTWABG-S17.html', amz:'B0026RMAXK'},
+ {n:'Gamma Synthetic Gut', b:'Gamma', ty:'syn', sh:'Round', g:[1.25,1.30], tier:1, tags:['value'], note:'Cheap, consistent, available everywhere. A sensible default for a first restring.', col:['#f5f5f3'], pf:'round', tw:'Gamma_Synthetic_Gut_16_130_String/descpageACGAMMA-G16.html', amz:'B001QTH6Y2'},
+ {n:'Wilson Champion’s Choice', b:'Wilson', ty:'hybrid', sh:'Gut + textured poly', g:[1.30,1.25], tier:4, tags:['feel','control','comfort'], note:'Natural gut mains with Luxilon ALU Power Rough crosses: the hybrid Roger Federer used.', col:['#d6b264','#b8bdc3'], pf:'round', tw:'Wilson_Champions_Choice_Hybrid_16_String/descpageACWILSON-WCC16.html', amz:'B00GKQGUXE'},
 ];
 const STRING_TYPE = {poly:'Polyester', multi:'Multifilament', gut:'Natural gut', syn:'Synthetic gut', hybrid:'Hybrid'};
 
-/* Shopping links. Leave tags empty until an affiliate account is approved: links still work, they just earn nothing.
+/* Shopping links: every string links straight to its product page at Tennis Warehouse and Amazon (tw and amz in STRING_DB).
+   Leave the IDs empty until an affiliate account is approved: links still work, they just earn nothing.
    amazonTag: your Associates tracking ID (e.g. 'tennisroam-20').
-   shops: extra retailers; {q} is replaced with the URL-encoded string name. Example after approval through an affiliate network:
-   {name:'Tennis Express', url:'https://YOUR-NETWORK-DEEPLINK?url=https%3A%2F%2Fwww.tennisexpress.com%2Fsearch%3Fq%3D{q}'} */
-const SHOP = {amazonTag:'', shops:[]};
+   twLink: the deep-link template your affiliate network gives you for Tennis Warehouse, with {url} where the
+   URL-encoded product page goes (e.g. 'https://www.avantlink.com/click.php?tt=cl&mi=MERCHANT_ID&pw=YOUR_ID&url={url}'). */
+const SHOP = {amazonTag:'', twLink:''};
 
 /* Questions for the Strings FAQ, rendered as HTML and as FAQPage structured data */
 const STRING_FAQ = [

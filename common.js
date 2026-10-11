@@ -46,14 +46,33 @@ function segInit(id, cb){
   }));
 }
 
-/* Shopping links for a string or other gear name, driven by SHOP in data.js */
-function buyLinks(name){
+/* Product-page links for a STRING_DB entry at Tennis Warehouse and Amazon, driven by SHOP in data.js */
+function buyLinks(x){
   if (typeof SHOP === 'undefined') return '';
-  const q = encodeURIComponent(name), paid = !!SHOP.amazonTag;
-  const amz = `https://www.amazon.com/s?k=${encodeURIComponent(name + ' tennis string')}${paid ? `&tag=${encodeURIComponent(SHOP.amazonTag)}` : ''}`;
-  const rel = paid ? 'sponsored nofollow noopener' : 'nofollow noopener';
-  return [...SHOP.shops.map(s => `<a class="buy" rel="sponsored nofollow noopener" target="_blank" href="${s.url.replace('{q}', q)}">${s.name}</a>`),
-    `<a class="buy" rel="${rel}" target="_blank" href="${amz}">Amazon</a>`].join('');
+  const tw = `https://www.tennis-warehouse.com/${x.tw}`;
+  const shops = [
+    ['Tennis Warehouse', SHOP.twLink ? SHOP.twLink.replace('{url}', encodeURIComponent(tw)) : tw, !!SHOP.twLink],
+    ['Amazon', `https://www.amazon.com/dp/${x.amz}${SHOP.amazonTag ? `?tag=${encodeURIComponent(SHOP.amazonTag)}` : ''}`, !!SHOP.amazonTag],
+  ];
+  return shops.map(([name, url, paid]) => `<a class="buy" rel="${paid ? 'sponsored ' : ''}nofollow noopener" target="_blank" href="${esc(url)}">${name}</a>`).join('');
 }
-const affNote = () => (typeof SHOP !== 'undefined' && (SHOP.amazonTag || SHOP.shops.length))
+const affNote = () => (typeof SHOP !== 'undefined' && (SHOP.amazonTag || SHOP.twLink))
   ? 'Shop links are affiliate links: Court Atlas may earn a commission at no extra cost to you. Recommendations are not paid for.' : '';
+
+/* Library swatch for a STRING_DB entry: a patch of string bed in the string's colour, with its cross-section in the corner.
+   Hybrids show mains and crosses in their two colours. A product photo (img) replaces it when one is set. */
+function stringSwatch(x){
+  if (x.img) return `<img class="swatch" src="${esc(x.img)}" alt="${esc(x.n)}" width="64" height="64" loading="lazy">`;
+  const [m, c = m] = x.col, line = '#7d847f';
+  const xs = [10, 22, 34, 46];
+  const mains = xs.map(v => `<rect x="${v - 3}" y="2" width="6" height="52" rx="3" fill="${m}" stroke="${line}" stroke-width=".8"/>`).join('');
+  // crosses weave over and under the mains
+  const crosses = xs.map((v, i) => `<rect x="2" y="${v - 3}" width="52" height="6" rx="3" fill="${c}" stroke="${line}" stroke-width=".8"/>`
+    + xs.filter((_, j) => (i + j) % 2).map(u => `<rect x="${u - 3}" y="${v - 3.5}" width="6" height="7" fill="${m}"/><path d="M${u - 3} ${v - 3.5}v7M${u + 3} ${v - 3.5}v7" stroke="${line}" stroke-width=".8"/>`).join('')).join('');
+  const r = 7, cx = 55, cy = 55;
+  const poly = k => Array.from({length:k}, (_, i) => { const a = Math.PI * 2 * i / k + Math.PI / k; return `${(cx + r * Math.cos(a)).toFixed(1)},${(cy + r * Math.sin(a)).toFixed(1)}`; }).join(' ');
+  const prof = x.pf === 'round' ? `<circle cx="${cx}" cy="${cy}" r="${r}"/>` : `<polygon points="${poly({oct:8, hex:6, sq:4}[x.pf])}"/>`;
+  return `<svg class="swatch" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="${esc(`${x.n}: ${x.sh.toLowerCase()} string`)}">`
+    + `<rect width="64" height="64" rx="10" fill="var(--sunk)"/>${mains}${crosses}`
+    + `<circle cx="${cx}" cy="${cy}" r="${r + 2.5}" fill="var(--surface)" stroke="var(--line)"/><g fill="${m}" stroke="${line}" stroke-width="1.2">${prof}</g></svg>`;
+}
