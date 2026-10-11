@@ -22,7 +22,7 @@
 <script src="data.js?v=436ea157"></script>
 <script src="draws.js?v=cde915ed"></script>
 <script src="common.js?v=5b8d6773"></script>
-<script src="views.js?v=02306556"></script>
+<script src="views.js?v=29e4d932"></script>
 <script src="parse.js?v=0ccd6484"></script>
 <script src="live.js?v=2c4d1899"></script>
 </head>
@@ -87,7 +87,7 @@
 <script>
 $('#sphere').setAttribute('d', MAP.sphere);
 $('#land').setAttribute('d', MAP.d);
-$('#asof').textContent = utc(FETCHED);
+$('#asof').textContent = et(FETCHED);
 
 const S = {tour:'all', month:null, sel:'uso', vb:[0,0,1000,470]};
 const byFocus = (a,b) => LV[b.lv].r - LV[a.lv].r || d(a.e) - d(b.e);
@@ -218,13 +218,12 @@ function renderDetail(){
     ${done.length ? `<h5 class="subh">Latest results</h5><ul class="mlist">${done.map(m => matchLine(m)).join('')}</ul>` : ''}
     <a class="slamlink" href="${tHref(t)}#${tour.toLowerCase()}">Full ${tour} draw: ${pend.length} matches to play, ${MATCHES.filter(m => m.key === k && played(m)).length} played →</a>`;
   }).join('');
-  const srcs = [...new Set([...keys, ...t.res.map(r => `${t.id}/${r.t === 'Mixed' ? 'Team' : r.t}`)])].map(srcLine);
   box.innerHTML = `<p class="eyebrow">${t.city}, ${t.co}</p><h4>${t.name}</h4>
     <div class="meta"><span class="st ${st}">${ST[st]}</span><span class="chip mono">${range(t)}</span><span class="chip"><i class="dot ${t.sf}"></i>${SF[t.sf]}${t.indoor ? ' · indoor' : ''}</span><span class="chip">${t.tour === 'BOTH' ? 'ATP & WTA' : t.tour} ${LV[t.lv].n}</span></div>
     ${res}${t.note ? `<p class="ex">${t.note}</p>` : ''}${draws}
     <a class="slamlink" href="${tHref(t)}">${keys.length ? 'Full draw, players and results' : 'Tournament page'} →</a>
     ${t.lv === 'GS' ? `<a class="slamlink" href="archive.html#${t.id}">${t.name} champions since 2000 →</a>` : ''}
-    ${[...new Set(srcs)].join('') || srcLine(null)}`;
+    ${srcLine(keys, resKeys(t))}`;
 }
 function renderAll(full = true){
   if (full){

@@ -20,17 +20,23 @@ const pLink = (s, label) => PEOPLE[s] ? `<a class="pl" href="${pHref(s)}">${esc(
 const nameLink = n => PEOPLE[slugify(n)] ? pLink(slugify(n), n) : esc(n);
 
 const MON3 = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-const utc = iso => { const x = new Date(iso); return `${MON3[x.getUTCMonth()]} ${x.getUTCDate()}, ${x.getUTCFullYear()}, ${String(x.getUTCHours()).padStart(2,'0')}:${String(x.getUTCMinutes()).padStart(2,'0')} UTC`; };
 const COMPILED = 'October 5, 2026';
+// US Eastern time, e.g. "Oct 11, 10:32 AM ET": EDT or EST is picked from the date
+const ET = new Intl.DateTimeFormat('en-US', {timeZone:'America/New_York', month:'short', day:'numeric', hour:'numeric', minute:'2-digit'});
+const et = iso => `${ET.format(new Date(iso))} ET`;
 
 /* ---------- sources ---------- */
 const RANK_SRC = {ATP:wikiUrl('ATP rankings'), WTA:wikiUrl('WTA rankings')};
 const srcTitle = u => decodeURIComponent(u.split('/wiki/')[1]).replace(/_/g, ' ');
-// One attribution line for a draw/result page: link, revision time, fetch time
-const srcLine = key => {
-  const s = SRC[key];
-  if (!s) return `<p class="src">Source: entered by hand from Wikipedia’s 2026 season pages · compiled ${COMPILED}</p>`;
-  return `<p class="src">Source: <a href="${s.u}" rel="external">Wikipedia, ${esc(srcTitle(s.u))}</a> · page revised <time datetime="${s.at}">${utc(s.at)}</time> · fetched <time datetime="${FETCHED}">${utc(FETCHED)}</time></p>`;
+// One attribution line per page or card, however many draws it draws on: a link per draw (labelled by tour when
+// there are several) and the latest change among them. The page titles sit in tooltips.
+const resKeys = t => t.res.map(r => `${t.id}/${r.t === 'Mixed' ? 'Team' : r.t}`);
+const srcLine = (...keys) => {
+  const ks = [...new Set(keys.flat())].filter(k => SRC[k]);
+  if (!ks.length) return `<p class="src">Source: entered by hand from Wikipedia’s 2026 season pages · compiled ${COMPILED}</p>`;
+  const a = (k, label) => `<a href="${SRC[k].u}" rel="external" title="${esc(srcTitle(SRC[k].u))}">${label}</a>`;
+  const at = ks.map(k => SRC[k].at).sort().pop();
+  return `<p class="src">Source: ${ks.length === 1 ? a(ks[0], 'Wikipedia') : `Wikipedia (${ks.map(k => a(k, k.split('/')[1])).join(', ')})`} · updated <time datetime="${at}">${et(at)}</time></p>`;
 };
 const srcStatic = (links, note) => `<p class="src">Source: ${links.map(([u, l]) => `<a href="${u}" rel="external">${esc(l)}</a>`).join(', ')}${note ? ` · ${note}` : ''}</p>`;
 
@@ -224,7 +230,7 @@ function tournamentBody(t){
   const st = status(t), keys = drawKeys(t);
   const res = t.res.length ? `<div class="panel tbox"><h2>Final${t.res.length > 1 ? 's' : ''}</h2><div class="res">${t.res.map(r => `<span class="tour">${r.t}</span><span>🏆 <b>${nameLink(r.w)}</b> <span class="ex">d.</span> ${nameLink(r.r)}</span><span class="score">${esc(r.sc)}</span>`).join('')}</div>
     ${t.note ? `<p class="ex">${esc(t.note)}</p>` : ''}
-    ${t.res.map(r => srcLine(`${t.id}/${r.t === 'Mixed' ? 'Team' : r.t}`)).filter((x, i, a) => a.indexOf(x) === i).join('')}</div>` : '';
+</div>` : '';
   const draws = keys.filter(k => !k.endsWith('/Team')).map(key => {
     const tour = key.split('/')[1], dr = DRAWS[key], pend = pending(key), ent = entrants(key);
     const alive = ent.filter(e => !e.out).length;
@@ -237,11 +243,10 @@ function tournamentBody(t){
   <ul class="entrants">${ent.map(e => `<li class="${e.out ? 'out' : 'in'}"><span class="sd mono">${esc(e.seed)}</span>${pLink(e.s)} <span class="ex mono">${esc(PEOPLE[e.s][1])}</span><span class="ex">${e.won ? '🏆 Champion' : e.lost ? `Lost ${esc(e.lost.round.toLowerCase())}` : e.next ? `Next: ${esc(e.next.round.toLowerCase())}` : 'In'}</span></li>`).join('')}</ul>
   <h3 class="subh">Draw by round</h3>
   ${[...rounds].reverse().map(x => `<details class="round"${x === cur || x.ms.some(m => !played(m)) ? ' open' : ''}><summary>${esc(x.r)} <span class="ex">${x.ms.filter(played).length}/${x.ms.length} played</span></summary><ul class="mlist">${x.ms.map(m => matchLine(m)).join('')}</ul></details>`).join('')}
-  ${srcLine(key)}
 </section>`;
   }).join('');
   const none = !keys.filter(k => !k.endsWith('/Team')).length && t.lv !== 'Team'
-    ? `<div class="panel tbox"><p>${st === 'done' ? 'The full draw for this event is not in the covered data yet.' : 'The draw has not been published yet. Players and match predictions appear here once it is out.'}${t.approx ? ' Dates are tentative and may change.' : ''}</p>${srcLine(null)}</div>` : '';
+    ? `<div class="panel tbox"><p>${st === 'done' ? 'The full draw for this event is not in the covered data yet.' : 'The draw has not been published yet. Players and match predictions appear here once it is out.'}${t.approx ? ' Dates are tentative and may change.' : ''}</p></div>` : '';
   return `<div class="page-head">
   <p class="eyebrow">${esc(t.city)}, ${esc(t.co)} · ${t.tour === 'BOTH' ? 'ATP &amp; WTA' : t.tour} ${LV[t.lv].n}</p>
   <h1>${esc(t.name)}</h1>
@@ -249,7 +254,8 @@ function tournamentBody(t){
 </div>
 ${res}${none}${draws}
 ${draws.includes('class="pred"') ? `<section>${methodNote()}</section>` : ''}
-<p class="tlinks"><a class="slamlink" href="${BASE}season.html#${t.id}">See it on the season map →</a>${t.lv === 'GS' ? ` <a class="slamlink" href="${BASE}archive.html#${t.id}">${esc(t.name)} champions since 2000 →</a>` : ''}</p>`;
+<p class="tlinks"><a class="slamlink" href="${BASE}season.html#${t.id}">See it on the season map →</a>${t.lv === 'GS' ? ` <a class="slamlink" href="${BASE}archive.html#${t.id}">${esc(t.name)} champions since 2000 →</a>` : ''}</p>
+${srcLine(keys, resKeys(t))}`;
 }
 
 function playerBody(s){
@@ -304,8 +310,8 @@ ${nxt.length ? `<section><div class="sec-head"><div><p class="eyebrow">${esc(nxt
   <div class="panel tbox srcbox" id="sources">
     <h3>Sources</h3>
     <p class="src">Profile: <a href="${pWiki(s)}" rel="external">Wikipedia, ${esc(PEOPLE[s][2] || name)}</a>${top ? ` · ranking: <a href="${RANK_SRC[tour]}" rel="external">Wikipedia, ${tour} rankings</a> of Sept 28, 2026 · compiled ${COMPILED}` : ''}</p>
-    <p class="src">Matches, form, surface records and Elo come from these draw pages, fetched <time datetime="${FETCHED}">${utc(FETCHED)}</time>:</p>
-    <ul class="srclist">${keysUsed.map(k => `<li><a href="${SRC[k].u}" rel="external">${esc(srcTitle(SRC[k].u))}</a> <span class="ex">revised ${utc(SRC[k].at)}</span></li>`).join('')}</ul>
+    <p class="src">Matches, form, surface records and Elo come from these draw pages, fetched <time datetime="${FETCHED}">${et(FETCHED)}</time>:</p>
+    <ul class="srclist">${keysUsed.map(k => `<li><a href="${SRC[k].u}" rel="external">${esc(srcTitle(SRC[k].u))}</a> <span class="ex">revised ${et(SRC[k].at)}</span></li>`).join('')}</ul>
   </div>
 </section>`;
 }

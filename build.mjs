@@ -42,7 +42,7 @@ const asset = (base, f) => `${base}${f}?v=${VER[f]}`;
 
 // The same data and view code the browser runs, evaluated here to render static pages
 const V = new Function(['data.js','draws.js','common.js','views.js'].map(f => fs.readFileSync(`src/${f}`, 'utf8')).join('\n;\n')
-  + '\nreturn {STRING_DB, STRING_TYPE, STRING_FAQ, buyLinks, affNote, stringSwatch, T, LV, SF, PEOPLE, DRAWS, SRC, FETCHED, TOP, MATCHES, setBase, methodNote, tournamentBody, playerBody, status, range, pTour, record, esc, utc, pName, pWiki, drawKeys};')();
+  + '\nreturn {STRING_DB, STRING_TYPE, STRING_FAQ, buyLinks, affNote, stringSwatch, T, LV, SF, PEOPLE, DRAWS, SRC, FETCHED, TOP, MATCHES, setBase, methodNote, tournamentBody, playerBody, status, range, pTour, record, esc, et, pName, pWiki, drawKeys};')();
 
 const FONTS = base => `<link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>

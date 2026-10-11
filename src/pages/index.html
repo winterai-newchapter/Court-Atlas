@@ -93,7 +93,7 @@
 
 
 <script>
-$('#asof').textContent = utc(FETCHED);
+$('#asof').textContent = et(FETCHED);
 $('#sphere').setAttribute('d', MAP.sphere);
 $('#land').setAttribute('d', MAP.d);
 const g = $('#pts');
@@ -137,7 +137,7 @@ function renderNow(tour){
     ${shown.length ? `<ul class="prows">${shown.map(predRow).join('')}</ul>${next.length > shown.length ? `<span class="ex">+${next.length - shown.length} more match${next.length - shown.length > 1 ? 'es' : ''} scheduled</span>` : ''}` : ''}
     ${shown.length < per && done.length ? `<h5 class="subh">Latest results</h5><ul class="mlist">${done.map(m => matchLine(m)).join('')}</ul>` : ''}
     <span class="go"><a href="${tHref(t)}">Draw, players &amp; predictions →</a> <a href="season.html#${t.id}">Map</a></span>
-    ${keys.map(srcLine).join('')}
+    ${srcLine(keys)}
   </article>`;
   }).join('') : `<p class="ex">No ${tour} tournaments are being played right now.</p>`;
 }

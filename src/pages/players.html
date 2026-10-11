@@ -70,7 +70,7 @@ function render(){
       ${surfaceTable(s)}
       <p class="eyebrow" style="margin:14px 0 6px">2026 finals (covered events)</p>
       ${f.length ? `<table><thead><tr><th>Tournament</th><th>Result</th><th>Opponent</th><th>Score</th></tr></thead><tbody>${f.map(x => `<tr><td><i class="dot ${x.t.sf}"></i> <a href="${tHref(x.t)}">${x.t.name}</a> <span class="ex mono">${fmt(x.t.e)}</span></td><td>${x.won ? '<b>Won</b>' : 'Runner-up'}</td><td>${nameLink(x.o)}</td><td class="mono ex">${x.sc}</td></tr>`).join('')}</tbody></table>` : '<p class="ex">No 2026 finals among the tournaments covered on this site.</p>'}
-      <p class="src">Form and surface records: ${pMatches(s).filter(counts).length} matches from ${new Set(pMatches(s).map(m => m.key)).size} Wikipedia draw pages, fetched ${utc(FETCHED)}. <a href="${pHref(s)}#sources">Every source</a></p>
+      <p class="src">Form and surface records: ${pMatches(s).filter(counts).length} matches from ${new Set(pMatches(s).map(m => m.key)).size} Wikipedia draw pages, fetched ${et(FETCHED)}. <a href="${pHref(s)}#sources">Every source</a></p>
     </div>`;
 }
 segInit('pSeg', v => { tourSel = v; render(); });
