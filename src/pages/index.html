@@ -26,6 +26,12 @@
   <div class="now-grid" id="nowGrid"></div>
 </section>
 
+<section id="news" aria-labelledby="newsTitle" hidden>
+  <div class="sec-head"><div><p class="eyebrow">From the draws · last two weeks</p><h2 id="newsTitle">Upsets and storylines</h2></div><p>Lower seeds beating higher ones, top-10 players going out early and long runs by qualifiers and unseeded players, picked automatically from the results.</p></div>
+  <div class="stories" id="stories"></div>
+  <p class="src">Headlines are written from Wikipedia draw results and Court Atlas’s <a href="players.html#method">Elo model</a>, not taken from news reports. World rankings cover the top 10 only.</p>
+</section>
+
 <section>
   <div class="sec-head"><div><p class="eyebrow">Latest</p><h2>Recent and upcoming</h2></div></div>
   <div class="recent" id="recent"></div>
@@ -128,7 +134,7 @@ function renderNow(tour){
     <b><a href="${tHref(t)}">${t.name}</a></b>
     <span class="meta"><i class="dot ${t.sf}"></i>${SF[t.sf]}${t.indoor ? ' · indoor' : ''} · <span class="mono">${range(t)}</span>${alive ? ` · ${alive} players left` : ''}</span>
     <span class="left">${left(t) <= 0 ? 'Final today' : left(t) === 1 ? 'Final tomorrow' : `Final in ${left(t)} days`}</span>
-    ${shown.length ? `<div class="preds${per > 1 ? '' : ' side'}">${shown.map(predCard).join('')}</div>${next.length > shown.length ? `<span class="ex">+${next.length - shown.length} more match${next.length - shown.length > 1 ? 'es' : ''} scheduled</span>` : ''}` : ''}
+    ${shown.length ? `<ul class="prows">${shown.map(predRow).join('')}</ul>${next.length > shown.length ? `<span class="ex">+${next.length - shown.length} more match${next.length - shown.length > 1 ? 'es' : ''} scheduled</span>` : ''}` : ''}
     ${shown.length < per && done.length ? `<h5 class="subh">Latest results</h5><ul class="mlist">${done.map(m => matchLine(m)).join('')}</ul>` : ''}
     <span class="go"><a href="${tHref(t)}">Draw, players &amp; predictions →</a> <a href="season.html#${t.id}">Map</a></span>
     ${keys.map(srcLine).join('')}
@@ -152,5 +158,12 @@ $('#recent').innerHTML = [...done, ...next].map(t => {
 }).join('');
 }
 renderRecent();
-liveWatch(() => { if (LIVE.length) renderNow(nowTour); renderRecent(); });
+
+function renderNews(){
+  const list = storylines();
+  $('#news').hidden = !list.length;
+  $('#stories').innerHTML = list.map(storyCard).join('');
+}
+renderNews();
+liveWatch(() => { if (LIVE.length) renderNow(nowTour); renderRecent(); renderNews(); });
 </script>

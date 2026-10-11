@@ -16,12 +16,12 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;800&family=Public+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap">
-<link rel="stylesheet" href="styles.css?v=ca23a0a0">
+<link rel="stylesheet" href="styles.css?v=92e35101">
 <script src="map.js?v=25b1b19f"></script>
 <script src="data.js?v=436ea157"></script>
 <script src="draws.js?v=cde915ed"></script>
 <script src="common.js?v=5b8d6773"></script>
-<script src="views.js?v=a1aec480"></script>
+<script src="views.js?v=7e0459b4"></script>
 <script src="parse.js?v=0ccd6484"></script>
 <script src="live.js?v=2c4d1899"></script>
 </head>
@@ -57,6 +57,12 @@
     </div></div>
   <p class="livestamp" id="livestamp" hidden></p>
   <div class="now-grid" id="nowGrid"></div>
+</section>
+
+<section id="news" aria-labelledby="newsTitle" hidden>
+  <div class="sec-head"><div><p class="eyebrow">From the draws · last two weeks</p><h2 id="newsTitle">Upsets and storylines</h2></div><p>Lower seeds beating higher ones, top-10 players going out early and long runs by qualifiers and unseeded players, picked automatically from the results.</p></div>
+  <div class="stories" id="stories"></div>
+  <p class="src">Headlines are written from Wikipedia draw results and Court Atlas’s <a href="players.html#method">Elo model</a>, not taken from news reports. World rankings cover the top 10 only.</p>
 </section>
 
 <section>
@@ -161,7 +167,7 @@ function renderNow(tour){
     <b><a href="${tHref(t)}">${t.name}</a></b>
     <span class="meta"><i class="dot ${t.sf}"></i>${SF[t.sf]}${t.indoor ? ' · indoor' : ''} · <span class="mono">${range(t)}</span>${alive ? ` · ${alive} players left` : ''}</span>
     <span class="left">${left(t) <= 0 ? 'Final today' : left(t) === 1 ? 'Final tomorrow' : `Final in ${left(t)} days`}</span>
-    ${shown.length ? `<div class="preds${per > 1 ? '' : ' side'}">${shown.map(predCard).join('')}</div>${next.length > shown.length ? `<span class="ex">+${next.length - shown.length} more match${next.length - shown.length > 1 ? 'es' : ''} scheduled</span>` : ''}` : ''}
+    ${shown.length ? `<ul class="prows">${shown.map(predRow).join('')}</ul>${next.length > shown.length ? `<span class="ex">+${next.length - shown.length} more match${next.length - shown.length > 1 ? 'es' : ''} scheduled</span>` : ''}` : ''}
     ${shown.length < per && done.length ? `<h5 class="subh">Latest results</h5><ul class="mlist">${done.map(m => matchLine(m)).join('')}</ul>` : ''}
     <span class="go"><a href="${tHref(t)}">Draw, players &amp; predictions →</a> <a href="season.html#${t.id}">Map</a></span>
     ${keys.map(srcLine).join('')}
@@ -185,7 +191,14 @@ $('#recent').innerHTML = [...done, ...next].map(t => {
 }).join('');
 }
 renderRecent();
-liveWatch(() => { if (LIVE.length) renderNow(nowTour); renderRecent(); });
+
+function renderNews(){
+  const list = storylines();
+  $('#news').hidden = !list.length;
+  $('#stories').innerHTML = list.map(storyCard).join('');
+}
+renderNews();
+liveWatch(() => { if (LIVE.length) renderNow(nowTour); renderRecent(); renderNews(); });
 </script>
 
 </main>

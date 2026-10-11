@@ -296,6 +296,25 @@ a{color:inherit}
 .nowcard .meta{font-size:13px;color:var(--muted);display:flex;align-items:center;gap:6px;flex-wrap:wrap}
 .nowcard .left{align-self:flex-start;font-size:12px;font-weight:600;padding:2px 8px;border-radius:999px;background:var(--live);color:#fff}
 .nowcard .go{font-size:13px;font-weight:600;margin-top:2px;color:var(--accent)}
+.prows{list-style:none;margin:2px 0 0;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));column-gap:20px}
+.prow{display:flex;flex-direction:column;gap:4px;padding:8px 0;border-top:1px solid var(--line);min-width:0}
+.pnames{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:8px;align-items:baseline;font-size:14px}
+.pnames > span:not(.ex){overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pnames > span:last-child{text-align:right}
+.pnames .ex{font-size:11px}
+.pnames .fav a{font-weight:600}
+.pline{display:grid;grid-template-columns:3.2em 1fr 3.2em;gap:8px;align-items:center;font-size:13px}
+.nowcard .pline b{font-size:14px}
+.pline b:last-child{text-align:right}
+.pline .pbar{height:6px}
+/* Upsets and storylines (home) */
+.stories{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,300px),1fr));gap:12px}
+.story{display:flex;flex-direction:column;gap:6px;padding:14px 16px;border:1px solid var(--line);border-radius:var(--r);background:var(--surface);text-decoration:none;color:inherit}
+.story:hover,.story:focus-visible{border-color:var(--ink)}
+.story .eyebrow{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.story .tag{font-size:11px;font-weight:700;padding:1px 8px;border-radius:999px;background:var(--ball);color:var(--ball-ink);letter-spacing:.02em}
+.story h3{font-size:17px;line-height:1.3}
+.story p{font-size:13px;color:var(--muted);margin:0}
 /* Now playing (season list) */
 .evlist .livehead{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--live);padding:8px 8px 2px}
 .evlist .livehead.sched{color:var(--muted);margin-top:6px}

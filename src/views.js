@@ -92,6 +92,8 @@ function reindex(){
   MATCHES.sort((x, y) => d(x.t.s) - d(y.t.s) || x.t.id.localeCompare(y.t.id) || x.ro - y.ro);
   MATCHES.forEach(m => [m.a, m.b].forEach(s => (BYP[s] = BYP[s] || []).push(m)));
   MATCHES.filter(counts).forEach(m => {
+    // The winner's chance just before the match, kept for the upsets list
+    m.pre = expect(blended(winner(m), m.t.sf), blended(loser(m), m.t.sf));
     const W = eloOf(winner(m)), L = eloOf(loser(m));
     eloStep(W, L); eloStep(W.sf[m.t.sf], L.sf[m.t.sf]);
   });
@@ -149,6 +151,63 @@ function predCard(m){
   </details>
 </div>`;
 }
+// A pending match in two short lines, for the home page: names and round, then the split bar. predCard has the working.
+const RABBR = {'first round':'R1','second round':'R2','third round':'R3','fourth round':'R4',quarterfinals:'QF',semifinals:'SF',final:'F'};
+function predRow(m){
+  const pa = predict(m.a, m.b, m.t.sf).p, pb = 1 - pa;
+  const side = (s, p) => { const e = DRAWS[m.key].e[s]; return `<span class="${p > .5 ? 'fav' : ''}">${pLink(s)}${e ? ` <span class="ex">(${esc(e)})</span>` : ''}</span>`; };
+  return `<li class="prow">
+  <div class="pnames">${side(m.a, pa)}<span class="ex mono" title="${esc(m.round)} · ${esc(m.tour)}">${RABBR[m.round.toLowerCase()] || esc(m.round)}</span>${side(m.b, pb)}</div>
+  <div class="pline"><b class="mono">${pct(pa)}</b><div class="pbar" role="img" aria-label="Win probability: ${esc(pName(m.a))} ${pct(pa)}, ${esc(pName(m.b))} ${pct(pb)}"><span style="width:${pa * 100}%"></span></div><b class="mono">${pct(pb)}</b></div>
+</li>`;
+}
+
+/* ---------- storylines ----------
+   Newsworthy results picked from the draws of the last two weeks: upsets by seeding, world ranking (top 10) or the
+   Elo odds before the match, and long runs by qualifiers, wildcards and unseeded players. Generated, not press reports. */
+const ENTRY = {Q:'Qualifier', WC:'Wildcard', LL:'Lucky loser', PR:'Protected-ranking entry'};
+const REACHED = {quarterfinals:'the quarterfinals', semifinals:'the semifinals', final:'the final'};
+function storylines(n = 6, days = 14){
+  const fresh = t => status(t) !== 'up' && TODAY - d(t.e) <= days * 864e5;
+  const age = t => status(t) === 'live' ? 0 : (TODAY - d(t.e)) / 864e5 * .03;
+  const seedNo = (key, s) => /^\d+$/.test(DRAWS[key].e[s]) ? +DRAWS[key].e[s] : 99;
+  const who = (key, s) => { const e = DRAWS[key].e[s]; return `${ENTRY[e] ? ENTRY[e] + ' ' : ''}${pName(s)}`; };
+  const out = [];
+  MATCHES.filter(m => counts(m) && fresh(m.t) && m.pre < .5).forEach(m => {
+    const w = winner(m), l = loser(m), nw = seedNo(m.key, w), nl = seedNo(m.key, l);
+    const rl = (TOP[l] || {}).rk, rw = (TOP[w] || {}).rk;
+    const bySeed = nl < 99 && nw > nl && (nw === 99 || nw - nl >= 5), byRank = rl && !(rw && rw < rl);
+    if (!bySeed && !byRank) return;
+    const big = nl <= 4 || rl <= 5, fin = m.round.toLowerCase() === 'final';
+    out.push({m, t:m.t, tag:'Upset', key:`${m.key}/${w}`,
+      score:(1 - m.pre) + (nl <= 4 ? .3 : nl <= 8 ? .15 : 0) + (rl ? (11 - rl) * .03 : 0) + m.ro * .04 + (nw === 99 ? .1 : 0) - age(m.t),
+      h:`${who(m.key, w)} ${fin ? 'beats' : big ? 'knocks out' : 'upsets'} ${rl ? `world No. ${rl}` : `No. ${nl} seed`} ${pName(l)}${fin ? ' for the title' : ''}`,
+      p:`${m.round} · ${m.sc}. Court Atlas’s Elo gave ${pName(w)} a ${pct(m.pre)} chance before the match.`});
+  });
+  // Long runs: an unseeded player, qualifier or wildcard reaching the quarterfinals or further
+  T.filter(fresh).forEach(t => drawKeys(t).filter(k => !k.endsWith('/Team')).forEach(key => entrants(key).forEach(e => {
+    if (seedNo(key, e.s) < 99) return;
+    const ms = MATCHES.filter(m => m.key === key && (m.a === e.s || m.b === e.s)), last = ms[ms.length - 1];
+    const far = last && REACHED[last.round.toLowerCase()];
+    if (!far) return;
+    const tag = ENTRY[DRAWS[key].e[e.s]] ? 'Long run' : 'Unseeded run';
+    out.push({t, tag, key:`${key}/${e.s}`, score:.6 + last.ro * .08 + (e.won ? .3 : 0) + (ENTRY[DRAWS[key].e[e.s]] ? .1 : 0) - age(t),
+      h:e.won ? `${who(key, e.s)} wins ${t.name} unseeded` : `${who(key, e.s)} ${e.out ? 'reached' : 'is into'} ${far} in ${t.city}`,
+      p:`${record(e.s, m => m.key === key).w} wins in the draw${e.won ? '' : e.out ? `, then lost to ${pName(winner(e.lost))}` : `, next ${pName(opp(e.next, e.s)) || 'opponent to be decided'}`}.`});
+  })));
+  // Best first, one story per player and event, at most three per event so one draw does not fill the list
+  const per = {}, seen = new Set();
+  return out.sort((a, b) => b.score - a.score).filter(x => {
+    if (seen.has(x.key) || (per[x.t.id] || 0) >= 3) return false;
+    seen.add(x.key); per[x.t.id] = (per[x.t.id] || 0) + 1; return true;
+  }).slice(0, n);
+}
+const storyCard = x => `<a class="story" href="${tHref(x.t)}">
+  <span class="eyebrow"><span class="tag">${x.tag}</span>${esc(x.t.name)}</span>
+  <h3>${esc(x.h)}</h3>
+  <p>${esc(x.p)}</p>
+</a>`;
+
 const matchLine = (m, focus) => {
   if (!played(m)) return `<li><span>${pLink(m.a)} <span class="ex">vs</span> ${pLink(m.b)}</span><span class="st up">Not played</span></li>`;
   const w = winner(m), l = loser(m);
