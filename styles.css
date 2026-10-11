@@ -292,7 +292,7 @@ a{color:inherit}
 .now-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:12px}
 .nowcard{display:flex;flex-direction:column;gap:6px;padding:14px 16px;border:1px solid var(--line);border-radius:var(--r);background:var(--bg);text-decoration:none;color:inherit}
 .nowcard:hover,.nowcard:focus-visible{border-color:var(--live)}
-.nowcard b{font-size:20px;line-height:1.2}
+.nowcard > b{font-size:20px;line-height:1.2}
 .nowcard .meta{font-size:13px;color:var(--muted);display:flex;align-items:center;gap:6px;flex-wrap:wrap}
 .nowcard .left{align-self:flex-start;font-size:12px;font-weight:600;padding:2px 8px;border-radius:999px;background:var(--live);color:#fff}
 .nowcard .go{font-size:13px;font-weight:600;margin-top:2px;color:var(--accent)}
@@ -307,13 +307,16 @@ a{color:inherit}
 .nowcard .pline b{font-size:14px}
 .pline b:last-child{text-align:right}
 .pline .pbar{height:6px}
-/* Upsets and storylines (home) */
-.stories{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,300px),1fr));gap:12px}
-.story{display:flex;flex-direction:column;gap:6px;padding:14px 16px;border:1px solid var(--line);border-radius:var(--r);background:var(--surface);text-decoration:none;color:inherit}
-.story:hover,.story:focus-visible{border-color:var(--ink)}
-.story .eyebrow{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-.story .tag{font-size:11px;font-weight:700;padding:1px 8px;border-radius:999px;background:var(--ball);color:var(--ball-ink);letter-spacing:.02em}
-.story h3{font-size:17px;line-height:1.3}
+/* Upsets and storylines (home): a numbered headline list on rules rather than cards */
+.stories{list-style:none;margin:0;padding:0;border-top:2px solid var(--ink);display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,340px),1fr));column-gap:32px;counter-reset:story}
+.stories li{counter-increment:story;border-bottom:1px solid var(--line)}
+.story{display:grid;grid-template-columns:48px 1fr;column-gap:12px;padding:14px 0 16px;text-decoration:none;color:inherit}
+.story::before{content:counter(story, decimal-leading-zero);grid-row:span 3;font-family:var(--f-display);font-size:34px;line-height:.9;color:var(--muted)}
+.story:hover h3,.story:focus-visible h3{text-decoration:underline;text-underline-offset:3px}
+.story:hover::before{color:var(--ink)}
+.story .eyebrow{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:4px}
+.story .tag{color:var(--live);font-weight:700}
+.story h3{font-size:18px;line-height:1.3;margin:0 0 4px}
 .story p{font-size:13px;color:var(--muted);margin:0}
 /* Now playing (season list) */
 .evlist .livehead{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--live);padding:8px 8px 2px}
@@ -401,8 +404,8 @@ details.round > summary a{color:inherit}
 .pgrid .tbox{margin-top:0}
 .plinks{list-style:none;margin:0;padding:4px 14px 12px;columns:4 180px;column-gap:20px;font-size:13px}
 .plinks li{padding:2px 0;break-inside:avoid}
-.nowcard b a{color:inherit;text-decoration:none}
-.nowcard b a:hover{text-decoration:underline}
+.nowcard > b a{color:inherit;text-decoration:none}
+.nowcard > b a:hover{text-decoration:underline}
 .nowcard .go a{color:inherit;margin-right:10px}
 .nowcard .pred{background:var(--surface)}
 .detail .preds{margin-top:2px}

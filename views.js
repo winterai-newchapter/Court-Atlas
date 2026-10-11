@@ -202,11 +202,11 @@ function storylines(n = 6, days = 14){
     seen.add(x.key); per[x.t.id] = (per[x.t.id] || 0) + 1; return true;
   }).slice(0, n);
 }
-const storyCard = x => `<a class="story" href="${tHref(x.t)}">
+const storyCard = x => `<li><a class="story" href="${tHref(x.t)}">
   <span class="eyebrow"><span class="tag">${x.tag}</span>${esc(x.t.name)}</span>
   <h3>${esc(x.h)}</h3>
   <p>${esc(x.p)}</p>
-</a>`;
+</a></li>`;
 
 const matchLine = (m, focus) => {
   if (!played(m)) return `<li><span>${pLink(m.a)} <span class="ex">vs</span> ${pLink(m.b)}</span><span class="st up">Not played</span></li>`;
