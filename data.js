@@ -124,7 +124,7 @@ const STRINGS = [
 /* String library for the Strings guide and String Finder.
    ty: poly | multi | gut | syn | hybrid · tier: relative price per set, 1 (cheapest) to 4 · g: gauges in mm sold by the maker
    tags drive the String Finder: spin, control, power, comfort, durability, feel, value. Ratings are editorial, not lab data.
-   col: a common colour of the string, [mains, crosses] for a hybrid · pf: cross-section (round | oct | hex | sq) · together they draw the library swatch.
+   col: a common colour of the string, [mains, crosses] for a hybrid · pf: cross-section (round | oct | hex | sq) · together they draw the library picture, a coiled set with no brand marks.
    img: optional product photo URL; when set it replaces the swatch. Use only images you may publish, e.g. from an approved affiliate feed.
    amz: Amazon ASIN of a single set of one gauge. */
 const STRING_DB = [

@@ -91,20 +91,26 @@ function buyLinks(x){
 const affNote = () => (typeof SHOP !== 'undefined' && SHOP.amazonTag)
   ? 'Shop links are affiliate links: Court Atlas may earn a commission at no extra cost to you. Recommendations are not paid for.' : '';
 
-/* Library swatch for a STRING_DB entry: a patch of string bed in the string's colour, with its cross-section in the corner.
-   Hybrids show mains and crosses in their two colours. A product photo (img) replaces it when one is set. */
+/* Library picture for a STRING_DB entry: a coiled set of the string in its colour, with no brand marks, and its
+   cross-section in the corner. Hybrids alternate the mains and crosses colours. A product photo (img) replaces it when one is set. */
 function stringSwatch(x){
   if (x.img) return `<img class="swatch" src="${esc(x.img)}" alt="${esc(x.n)}" width="64" height="64" loading="lazy">`;
-  const [m, c = m] = x.col, line = '#7d847f';
-  const xs = [10, 22, 34, 46];
-  const mains = xs.map(v => `<rect x="${v - 3}" y="2" width="6" height="52" rx="3" fill="${m}" stroke="${line}" stroke-width=".8"/>`).join('');
-  // crosses weave over and under the mains
-  const crosses = xs.map((v, i) => `<rect x="2" y="${v - 3}" width="52" height="6" rx="3" fill="${c}" stroke="${line}" stroke-width=".8"/>`
-    + xs.filter((_, j) => (i + j) % 2).map(u => `<rect x="${u - 3}" y="${v - 3.5}" width="6" height="7" fill="${m}"/><path d="M${u - 3} ${v - 3.5}v7M${u + 3} ${v - 3.5}v7" stroke="${line}" stroke-width=".8"/>`).join('')).join('');
+  const [m, c = m] = x.col;
+  // a dark string gets a lighter outline so it still stands out on the dark theme
+  const lum = parseInt(m.slice(1, 3), 16) + parseInt(m.slice(3, 5), 16) + parseInt(m.slice(5, 7), 16), line = lum < 200 ? '#8f9792' : '#5f6662';
+  // loops of the coil, each a slightly turned and shifted ellipse, drawn as outline, string and sheen
+  const loops = [-14, -6, 3, 11, -10, 7, -2].map((a, i) => {
+    const col = i % 2 ? c : m, e = `cx="${(29 + (i % 3) - 1).toFixed(1)}" cy="${(29 + (i % 2) * 1.5).toFixed(1)}" rx="${20 - (i % 3)}" ry="${14 - (i % 2)}" transform="rotate(${a} 29 29)" fill="none"`;
+    return `<ellipse ${e} stroke="${line}" stroke-width="4"/><ellipse ${e} stroke="${col}" stroke-width="2.6"/><ellipse ${e} stroke="#fff" stroke-opacity=".35" stroke-width=".7" stroke-dasharray="10 14"/>`;
+  }).join('');
+  // the loose end and a tie holding the coil together
+  const tail = 'M47 36c4 6 2 12-5 16s-14 4-19 7';
+  const tie = `<rect x="7" y="22" width="5" height="11" rx="1.5" transform="rotate(-12 9.5 27.5)" fill="#9aa39d" stroke="${line}" stroke-width=".8"/>`;
   const r = 7, cx = 55, cy = 55;
   const poly = k => Array.from({length:k}, (_, i) => { const a = Math.PI * 2 * i / k + Math.PI / k; return `${(cx + r * Math.cos(a)).toFixed(1)},${(cy + r * Math.sin(a)).toFixed(1)}`; }).join(' ');
   const prof = x.pf === 'round' ? `<circle cx="${cx}" cy="${cy}" r="${r}"/>` : `<polygon points="${poly({oct:8, hex:6, sq:4}[x.pf])}"/>`;
-  return `<svg class="swatch" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="${esc(`${x.n}: ${x.sh.toLowerCase()} string`)}">`
-    + `<rect width="64" height="64" rx="10" fill="var(--sunk)"/>${mains}${crosses}`
+  return `<svg class="swatch" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="${esc(`Illustration of a coiled set of ${x.n}: ${x.sh.toLowerCase()} string`)}">`
+    + `<rect width="64" height="64" rx="10" fill="var(--sunk)"/>${loops}`
+    + `<path d="${tail}" fill="none" stroke="${line}" stroke-width="4" stroke-linecap="round"/><path d="${tail}" fill="none" stroke="${c}" stroke-width="2.6" stroke-linecap="round"/>${tie}`
     + `<circle cx="${cx}" cy="${cy}" r="${r + 2.5}" fill="var(--surface)" stroke="var(--line)"/><g fill="${m}" stroke="${line}" stroke-width="1.2">${prof}</g></svg>`;
 }
