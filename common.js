@@ -34,9 +34,45 @@ function surfaceShape(sf, x, y, r){
 }
 
 /* Horizontal bar chart: rows [{n, v, tip, me}] */
-function hbars(box, rows, max, ticks, unit){
-  box.innerHTML = rows.map(r => `<div class="hb${r.me ? ' me' : ''}" title="${r.tip}"><span class="nm">${r.n}</span><span class="track"><span class="fill" style="width:${Math.max(.5, r.v/max*100)}%"></span></span><span class="v">${r.v.toLocaleString('en-US')}${unit}</span></div>`).join('')
-    + `<div class="axis"><span></span><div>${ticks.map(t => `<span>${t.toLocaleString('en-US')}</span>`).join('')}</div><span></span></div>`;
+const hbarsHtml = (rows, max, ticks, unit) => rows.map(r => `<div class="hb${r.me ? ' me' : ''}" title="${r.tip}"><span class="nm">${r.n}</span><span class="track"><span class="fill" style="width:${Math.max(.5, r.v/max*100)}%"></span></span><span class="v">${r.v.toLocaleString('en-US')}${unit}</span></div>`).join('')
+  + `<div class="axis"><span></span><div>${ticks.map(t => `<span>${t.toLocaleString('en-US')}</span>`).join('')}</div><span></span></div>`;
+function hbars(box, rows, max, ticks, unit){ box.innerHTML = hbarsHtml(rows, max, ticks, unit); }
+
+/* ---------- topic page content ----------
+   Tables and lists the History, Past Champions and Rackets pages show. build.mjs writes them into the static HTML
+   so search engines and AI crawlers that do not run JavaScript can read them; the pages re-render them when filtered. */
+const timelineHtml = () => HISTORY.map(h => `<li class="${h.big ? 'big' : ''}"><div class="yr">${h.y}</div><h3>${h.t}</h3><p>${h.d}</p></li>`).join('');
+const recordsHtml = () => `<thead><tr><th></th><th>Player</th><th>Country</th><th class="n">Titles</th></tr></thead><tbody>${RECORDS.map(r => `<tr><td class="ex">${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td><td class="n">${r[3]}</td></tr>`).join('')}</tbody>`;
+const slam4Html = () => SLAMS.map(s => `<div><b><i class="dot ${s.sf}"></i>${s.n}</b><span class="ex">${s.d}</span></div>`).join('');
+const racketTable = (list = RACKETS, sel = null) => `<thead><tr><th>Model</th><th class="n">Head</th><th class="n">Weight</th><th>Pattern</th><th>Played by (line)</th></tr></thead><tbody>${list.map(r => `<tr class="${sel === r.m ? 'hl' : ''}"><td>${r.m}</td><td class="n">${r.h}</td><td class="n">${r.w} g</td><td class="mono">${r.p}</td><td class="ex">${r.who || '—'}</td></tr>`).join('')}</tbody>`;
+
+// Past Champions: PAST_SLAMS merged with this season's finished Slam finals from T.
+// A view is {tour:'all'|'ATP'|'WTA', era:'all'|'2000'|…, who:highlighted name or null, col:highlighted Slam column or -1}
+const SLAM_IDS = ['ao','rg','wim','uso'];
+const CHAMPS = {ATP:{...PAST_SLAMS.ATP}, WTA:{...PAST_SLAMS.WTA}};
+['ATP','WTA'].forEach(tour => {
+  const row = SLAM_IDS.map(id => { const r = T.find(t => t.id === id).res.find(x => x.t === tour); return r ? r.w : undefined; });
+  if (row.some(Boolean)) CHAMPS[tour][2026] = row;
+});
+const archTours = A => A.tour === 'all' ? ['ATP','WTA'] : [A.tour];
+const archYears = A => Object.keys(CHAMPS.ATP).map(Number).filter(y => A.era === 'all' || (y >= +A.era && y < +A.era + 10)).sort((a,b) => b - a);
+function champsTable(A){
+  const name = (n, tour) => n === null ? '<span class="ex">Not held</span>' : n === undefined ? '<span class="ex">—</span>'
+    : `<button type="button" class="who${A.who === n ? ' on' : ''}" data-n="${n}">${n}</button>${A.tour === 'all' ? ` <small class="ex">${tour}</small>` : ''}`;
+  return `<thead><tr><th>Year</th>${SLAMS.map((s, i) => `<th class="${A.col === i ? 'col' : ''}"><i class="dot ${s.sf}"></i> ${s.n}</th>`).join('')}</tr></thead>
+  <tbody>${archYears(A).map(y => `<tr><td class="n">${y}</td>${SLAMS.map((s, i) => `<td class="${A.col === i ? 'col' : ''}">${archTours(A).map(t => `<div>${name((CHAMPS[t][y] || [])[i], t)}</div>`).join('')}</td>`).join('')}</tr>`).join('')}</tbody>`;
+}
+// Most-majors leaderboard: the rows (for click handlers), the panel's title and caption, and the bars
+function champsBoard(A){
+  const c = {}, ys = archYears(A);
+  ys.forEach(y => archTours(A).forEach(t => (CHAMPS[t][y] || []).forEach((n, i) => {
+    if (!n) return;
+    (c[n] = c[n] || {n, t, v:0, ev:[]}); c[n].v++; c[n].ev.push(`${SLAMS[i].n} ${y}`);
+  })));
+  const rows = Object.values(c).sort((a,b) => b.v - a.v || a.n.localeCompare(b.n)).slice(0, 12);
+  const max = Math.max(4, Math.ceil(rows[0].v / 4) * 4);
+  return {rows, title:`Most majors${A.tour === 'all' ? '' : `, ${A.tour}`}`, cap:`Singles titles won ${ys[ys.length-1]}–${ys[0]}`,
+    html:hbarsHtml(rows.map(r => ({n:`${r.n}${A.tour === 'all' ? ` (${r.t})` : ''}`, v:r.v, me:A.who === r.n, tip:`${r.n} · ${r.ev.join(', ')}`})), max, [0, max/4, max/2, max*3/4, max], '')};
 }
 
 function segInit(id, cb){

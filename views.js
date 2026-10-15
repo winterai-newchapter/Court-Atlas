@@ -225,6 +225,89 @@ const methodNote = () => `<div class="panel method" id="method">
   <p class="ex">Limits: only covered tournaments count (no Challengers, qualifying or most 250s), every rating starts fresh in January, and injuries or retirements mid-event are not modelled. Treat the numbers as an estimate, not a forecast.</p>
 </div>`;
 
+/* ---------- live topic page content ----------
+   What the home, Players and Statistics pages show, written into the static HTML by build.mjs for crawlers that
+   do not run JavaScript, and re-rendered by the pages as results come in or a filter changes. */
+const TOURNAME = {ATP:'ATP men', WTA:'WTA women'};
+// Home: the four Slam champions and the last three and next three events
+const slamBoard = () => SLAM_IDS.map(id => TBY[id]).map(t => `<div>
+  <span class="slam"><i class="dot ${t.sf}"></i>${t.name}</span>
+  <span class="w">${nameLink(t.res[0].w)} <small>ATP</small></span>
+  <span class="w">${nameLink(t.res[1].w)} <small>WTA</small></span>
+</div>`).join('');
+function recentList(){
+  const sorted = [...T].sort((a,b) => d(a.s) - d(b.s));
+  const done = sorted.filter(t => status(t) === 'done').slice(-3), next = sorted.filter(t => status(t) !== 'done').slice(0, 3);
+  return [...done, ...next].map(t => {
+    const st = status(t), sub = t.res[0] ? `Won by ${t.res.map(r => r.w).join(' · ')}` : `${range(t)} · ${t.city}`;
+    return `<a href="${tHref(t)}"><i class="dot ${t.sf}"></i><span><span class="nm">${t.name}</span><br><span class="sub">${sub}</span></span><span class="st ${st}">${ST[st]}</span></a>`;
+  }).join('');
+}
+// Statistics: ranking points and covered titles per tour, then career majors. v is 'all', 'ATP' or 'WTA'.
+function statsHtml(v){
+  const tours = v === 'all' ? ['ATP','WTA'] : [v];
+  const panel = (title, cap, bars, wide) => `<div class="panel chart"${wide ? ' style="grid-column:1/-1"' : ''}><h3>${title}</h3><p class="cap">${cap}</p><div class="hbars">${bars}</div></div>`;
+  const titles = tour => {
+    const c = {};
+    T.forEach(t => t.res.forEach(r => { if (r.t === tour){ (c[r.w] = c[r.w] || {n:r.w, v:0, ev:[]}); c[r.w].v++; c[r.w].ev.push(t.name); } }));
+    return Object.values(c).sort((a,b) => b.v - a.v || a.n.localeCompare(b.n)).slice(0,10);
+  };
+  const slams = tours.flatMap(t => PLAYERS[t].map(p => ({...p, t}))).filter(p => p.gs > 0).sort((a,b) => b.gs - a.gs);
+  return tours.map(tour =>
+      panel(`${tour} ranking points`, `Top 10, rankings of Sept 28, 2026`,
+        hbarsHtml(PLAYERS[tour].map(p => ({n:`${p.rk}. ${p.n}`, v:p.pts, tip:`${p.n} · ${p.co} · ${p.pts.toLocaleString('en-US')} pts`})), 12000, [0,3000,6000,9000,12000], ''))
+    + panel(`${tour} titles in covered events`, `Only the ${T.length} tournaments this site covers (Slams, 1000s, 500s and some 250s), not the full 2026 season`,
+        hbarsHtml(titles(tour).map(r => ({n:r.n, v:r.v, tip:`${r.n} · ${r.ev.join(', ')}`})), 6, [0,2,4,6], ''))).join('')
+    + panel(`Career Grand Slam singles titles, current top 10${tours.length > 1 ? 's' : ''}`, `Through the 2026 US Open, ${tours.length > 1 ? 'ATP and WTA combined' : TOURNAME[v]} · <a href="archive.html">every champion since 2000 →</a>`,
+        hbarsHtml(slams.map(p => ({n:tours.length > 1 ? `${p.n} (${p.t})` : p.n, v:p.gs, tip:`${p.n} · ${p.gs} major titles`})), 8, [0,2,4,6,8], ''), true);
+}
+const statsSrc = () => srcStatic([[RANK_SRC.ATP, 'Wikipedia, ATP rankings'], [RANK_SRC.WTA, 'Wikipedia, WTA rankings']], `ranking points of Sept 28, 2026 · compiled ${COMPILED}`)
+  + `<p class="src">Titles: the finals on each <a href="${BASE}season.html">tournament page</a>, each linked to its Wikipedia draw (fetched ${et(FETCHED)}). Career majors: <a href="${wikiUrl("List of Grand Slam men's singles champions")}" rel="external">men’s</a> and <a href="${wikiUrl("List of Grand Slam women's singles champions")}" rel="external">women’s</a> champions lists on Wikipedia, through the 2026 US Open.</p>`;
+// Players: the top-10 cards and the profile panel of the selected player (a PLAYERS entry with its tour)
+const topPlayers = tours => tours.flatMap(t => PLAYERS[t].map(p => ({...p, tour:t})));
+function playerFinals(p){
+  const out = [];
+  T.forEach(t => t.res.forEach(r => {
+    if (r.w === p.n) out.push({t, won:true, o:r.r, sc:r.sc});
+    else if (r.r === p.n) out.push({t, won:false, o:r.w, sc:r.sc});
+  }));
+  return out.sort((a,b) => d(a.t.s) - d(b.t.s));
+}
+const playerCards = (tours, sel) => tours.map(t => `${tours.length > 1 ? `<h2 class="grouph">${TOURNAME[t]}</h2>` : ''}<div class="players" data-tour="${t}">${topPlayers([t]).map(p => {
+    const w = playerFinals(p).filter(x => x.won).length, r = record(slugify(p.n));
+    return `<button type="button" class="pc" aria-pressed="${p.n === sel}" data-k="${p.n}">
+      <div class="ptop"><div><h3>${p.n}</h3><div class="en">${p.co}</div></div><div class="rank">${p.rk}</div></div>
+      <div class="kv"><span>Points<b>${p.pts.toLocaleString('en-US')}</b></span><span>W–L (covered)<b>${r.w}–${r.l}</b></span><span>Titles (covered)<b>${w}</b></span></div>
+    </button>`;
+  }).join('')}</div>`).join('');
+function playerDetail(p){
+  const f = playerFinals(p), s = slugify(p.n);
+  return `<div>
+      <p class="eyebrow">World No. ${p.rk} · ${p.tour}</p><h3><a class="pl" href="${pHref(s)}">${p.n}</a></h3>
+      <p style="margin-top:10px;max-width:52ch">${p.style}</p>
+      <dl class="facts">
+        <div><dt>Country</dt><dd>${p.co}</dd></div>
+        <div><dt>Age</dt><dd class="num">${age(p.b)} <span class="ex">(born ${fmt(p.b)}, ${p.b.slice(0,4)})</span></dd></div>
+        <div><dt>Plays</dt><dd>${p.h}</dd></div>
+        <div><dt>Ranking points</dt><dd class="num">${p.pts.toLocaleString('en-US')}</dd></div>
+        <div><dt>Career major singles titles</dt><dd class="num">${p.gs}</dd></div>
+        <div><dt>Racket</dt><dd>${p.racket}</dd></div>
+        <div><dt>Elo rating</dt><dd class="num">${Math.round(eloOf(s).r)} <span class="ex">from ${eloOf(s).n} covered matches</span></dd></div>
+      </dl>
+      <a class="slamlink" href="${pHref(s)}">Full profile: head-to-head and every 2026 result →</a>
+      ${srcStatic([[pWiki(s), `Wikipedia, ${PEOPLE[s][2] || p.n}`], [RANK_SRC[p.tour], `Wikipedia, ${p.tour} rankings`]], `rankings of Sept 28, 2026 · compiled ${COMPILED}`)}
+    </div>
+    <div class="tablebox">
+      <p class="eyebrow" style="margin-bottom:6px">Last 10 matches</p>
+      ${formChips(s)}
+      <p class="eyebrow" style="margin:14px 0 6px">Win rate by surface, 2026</p>
+      ${surfaceTable(s)}
+      <p class="eyebrow" style="margin:14px 0 6px">2026 finals (covered events)</p>
+      ${f.length ? `<table><thead><tr><th>Tournament</th><th>Result</th><th>Opponent</th><th>Score</th></tr></thead><tbody>${f.map(x => `<tr><td><i class="dot ${x.t.sf}"></i> <a href="${tHref(x.t)}">${x.t.name}</a> <span class="ex mono">${fmt(x.t.e)}</span></td><td>${x.won ? '<b>Won</b>' : 'Runner-up'}</td><td>${nameLink(x.o)}</td><td class="mono ex">${x.sc}</td></tr>`).join('')}</tbody></table>` : '<p class="ex">No 2026 finals among the tournaments covered on this site.</p>'}
+      <p class="src">Form and surface records: ${pMatches(s).filter(counts).length} matches from ${new Set(pMatches(s).map(m => m.key)).size} Wikipedia draw pages, fetched ${et(FETCHED)}. <a href="${pHref(s)}#sources">Every source</a></p>
+    </div>`;
+}
+
 /* ---------- full pages ---------- */
 function tournamentBody(t){
   const st = status(t), keys = drawKeys(t);

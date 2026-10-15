@@ -23,55 +23,17 @@
 
 <script>
 let tourSel = 'all', pSel = null;
-const TOURNAME = {ATP:'ATP men', WTA:'WTA women'};
-function finals(p){
-  const out = [];
-  T.forEach(t => t.res.forEach(r => {
-    if (r.w === p.n) out.push({t, won:true, o:r.r, sc:r.sc});
-    else if (r.r === p.n) out.push({t, won:false, o:r.w, sc:r.sc});
-  }));
-  return out.sort((a,b) => d(a.t.s) - d(b.t.s));
-}
 function render(){
   const tours = tourSel === 'all' ? ['ATP','WTA'] : [tourSel];
-  const ps = tours.flatMap(t => PLAYERS[t].map(p => ({...p, tour:t})));
+  const ps = topPlayers(tours);
   if (!ps.find(p => p.n === pSel)) pSel = ps[0].n;
   if ($('#playerGrid').contains($('#pdetail'))) $('#playerGrid').after($('#pdetail'));
-  $('#playerGrid').innerHTML = tours.map(t => `${tours.length > 1 ? `<h2 class="grouph">${TOURNAME[t]}</h2>` : ''}<div class="players" data-tour="${t}">${ps.filter(p => p.tour === t).map(p => {
-    const w = finals(p).filter(x => x.won).length, r = record(slugify(p.n));
-    return `<button type="button" class="pc" aria-pressed="${p.n === pSel}" data-k="${p.n}">
-      <div class="ptop"><div><h3>${p.n}</h3><div class="en">${p.co}</div></div><div class="rank">${p.rk}</div></div>
-      <div class="kv"><span>Points<b>${p.pts.toLocaleString('en-US')}</b></span><span>W–L (covered)<b>${r.w}–${r.l}</b></span><span>Titles (covered)<b>${w}</b></span></div>
-    </button>`;
-  }).join('')}</div>`).join('');
+  $('#playerGrid').innerHTML = playerCards(tours, pSel);
   document.querySelectorAll('.pc').forEach(b => b.onclick = () => { pSel = b.dataset.k; history.replaceState(null, '', '#' + slugify(pSel)); render(); });
-  const p = ps.find(x => x.n === pSel), f = finals(p), s = slugify(p.n);
+  const p = ps.find(x => x.n === pSel);
   // Show the profile right under the selected player's tour
   $(`.players[data-tour="${p.tour}"]`).after($('#pdetail'));
-  $('#pdetail').innerHTML = `<div>
-      <p class="eyebrow">World No. ${p.rk} · ${p.tour}</p><h3><a class="pl" href="${pHref(s)}">${p.n}</a></h3>
-      <p style="margin-top:10px;max-width:52ch">${p.style}</p>
-      <dl class="facts">
-        <div><dt>Country</dt><dd>${p.co}</dd></div>
-        <div><dt>Age</dt><dd class="num">${age(p.b)} <span class="ex">(born ${fmt(p.b)}, ${p.b.slice(0,4)})</span></dd></div>
-        <div><dt>Plays</dt><dd>${p.h}</dd></div>
-        <div><dt>Ranking points</dt><dd class="num">${p.pts.toLocaleString('en-US')}</dd></div>
-        <div><dt>Career major singles titles</dt><dd class="num">${p.gs}</dd></div>
-        <div><dt>Racket</dt><dd>${p.racket}</dd></div>
-        <div><dt>Elo rating</dt><dd class="num">${Math.round(eloOf(s).r)} <span class="ex">from ${eloOf(s).n} covered matches</span></dd></div>
-      </dl>
-      <a class="slamlink" href="${pHref(s)}">Full profile: head-to-head and every 2026 result →</a>
-      ${srcStatic([[pWiki(s), `Wikipedia, ${PEOPLE[s][2] || p.n}`], [RANK_SRC[p.tour], `Wikipedia, ${p.tour} rankings`]], `rankings of Sept 28, 2026 · compiled ${COMPILED}`)}
-    </div>
-    <div class="tablebox">
-      <p class="eyebrow" style="margin-bottom:6px">Last 10 matches</p>
-      ${formChips(s)}
-      <p class="eyebrow" style="margin:14px 0 6px">Win rate by surface, 2026</p>
-      ${surfaceTable(s)}
-      <p class="eyebrow" style="margin:14px 0 6px">2026 finals (covered events)</p>
-      ${f.length ? `<table><thead><tr><th>Tournament</th><th>Result</th><th>Opponent</th><th>Score</th></tr></thead><tbody>${f.map(x => `<tr><td><i class="dot ${x.t.sf}"></i> <a href="${tHref(x.t)}">${x.t.name}</a> <span class="ex mono">${fmt(x.t.e)}</span></td><td>${x.won ? '<b>Won</b>' : 'Runner-up'}</td><td>${nameLink(x.o)}</td><td class="mono ex">${x.sc}</td></tr>`).join('')}</tbody></table>` : '<p class="ex">No 2026 finals among the tournaments covered on this site.</p>'}
-      <p class="src">Form and surface records: ${pMatches(s).filter(counts).length} matches from ${new Set(pMatches(s).map(m => m.key)).size} Wikipedia draw pages, fetched ${et(FETCHED)}. <a href="${pHref(s)}#sources">Every source</a></p>
-    </div>`;
+  $('#pdetail').innerHTML = playerDetail(p);
 }
 segInit('pSeg', v => { tourSel = v; render(); });
 const hashP = Object.values(TOP).find(p => slugify(p.n) === location.hash.slice(1));

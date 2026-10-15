@@ -53,7 +53,7 @@ function render(){
     const x0 = X(g[0].w), end = x0 > W-130, off = 10 + (g.length-1)*7;
     svg.appendChild(el('text', {class:'lbl', x:end ? x0-off : x0+off, y:Y(g[0].h)-10, 'text-anchor':end ? 'end' : 'start'}, lab));
   });
-  $('#racketTable').innerHTML = `<thead><tr><th>Model</th><th class="n">Head</th><th class="n">Weight</th><th>Pattern</th><th>Played by (line)</th></tr></thead><tbody>${shown().map(r => `<tr class="${rSel === r.m ? 'hl' : ''}"><td>${r.m}</td><td class="n">${r.h}</td><td class="n">${r.w} g</td><td class="mono">${r.p}</td><td class="ex">${r.who || '—'}</td></tr>`).join('')}</tbody>`;
+  $('#racketTable').innerHTML = racketTable(shown(), rSel);
 }
 segInit('headSeg', v => { rFilter = v; render(); });
 render();

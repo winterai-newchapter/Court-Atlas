@@ -105,16 +105,6 @@ const g = $('#pts');
   sh.appendChild(el('title', {}, `${t.name} · ${range(t)}`));
   grp.appendChild(sh); g.appendChild(grp);
 });
-$('#kSeason').textContent = T.length;
-$('#kRackets').textContent = RACKETS.length;
-$('#kPts').textContent = PLAYERS.ATP[0].pts.toLocaleString('en-US');
-
-$('#board').innerHTML = ['ao','rg','wim','uso'].map(id => T.find(t => t.id === id)).map(t => `<div>
-  <span class="slam"><i class="dot ${t.sf}"></i>${t.name}</span>
-  <span class="w">${nameLink(t.res[0].w)} <small>ATP</small></span>
-  <span class="w">${nameLink(t.res[1].w)} <small>WTA</small></span>
-</div>`).join('');
-
 const LIVE = [...T].filter(t => status(t) === 'live').sort((a,b) => LV[b.lv].r - LV[a.lv].r || d(a.e) - d(b.e));
 let nowTour = 'all';
 function renderNow(tour){
@@ -146,16 +136,7 @@ if (LIVE.length){
   renderNow('all');
 }
 
-function renderRecent(){
-const sorted = [...T].sort((a,b) => d(a.s) - d(b.s));
-const done = sorted.filter(t => status(t) === 'done').slice(-3);
-const next = sorted.filter(t => status(t) !== 'done').slice(0, 3);
-$('#recent').innerHTML = [...done, ...next].map(t => {
-  const st = status(t);
-  const sub = t.res[0] ? `Won by ${t.res.map(r => r.w).join(' · ')}` : `${range(t)} · ${t.city}`;
-  return `<a href="${tHref(t)}"><i class="dot ${t.sf}"></i><span><span class="nm">${t.name}</span><br><span class="sub">${sub}</span></span><span class="st ${st}">${ST[st]}</span></a>`;
-}).join('');
-}
+const renderRecent = () => { $('#recent').innerHTML = recentList(); };
 renderRecent();
 
 function renderNews(){

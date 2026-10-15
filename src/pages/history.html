@@ -22,8 +22,3 @@
   <p class="src">Source: <a href="https://en.wikipedia.org/wiki/History_of_tennis" rel="external">Wikipedia, History of tennis</a>; records from <a href="https://en.wikipedia.org/wiki/List_of_Grand_Slam_men%27s_singles_champions" rel="external">Wikipedia, List of Grand Slam men’s singles champions</a> and <a href="https://en.wikipedia.org/wiki/List_of_Grand_Slam_women%27s_singles_champions" rel="external">Wikipedia, List of Grand Slam women’s singles champions</a> · compiled October 5, 2026</p>
 </section>
 
-<script>
-$('#timeline').innerHTML = HISTORY.map(h => `<li class="${h.big ? 'big' : ''}"><div class="yr">${h.y}</div><h3>${h.t}</h3><p>${h.d}</p></li>`).join('');
-$('#recTable').innerHTML = `<thead><tr><th></th><th>Player</th><th>Country</th><th class="n">Titles</th></tr></thead><tbody>${RECORDS.map(r => `<tr><td class="ex">${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td><td class="n">${r[3]}</td></tr>`).join('')}</tbody>`;
-$('#slam4').innerHTML = SLAMS.map(s => `<div><b><i class="dot ${s.sf}"></i>${s.n}</b><span class="ex">${s.d}</span></div>`).join('');
-</script>

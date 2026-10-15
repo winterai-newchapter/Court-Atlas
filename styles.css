@@ -404,6 +404,9 @@ details.round > summary a{color:inherit}
 .pgrid .tbox{margin-top:0}
 .plinks{list-style:none;margin:0;padding:4px 14px 12px;columns:4 180px;column-gap:20px;font-size:13px}
 .plinks li{padding:2px 0;break-inside:avoid}
+.tlist{columns:3 260px;padding-top:8px}
+.tlist li{padding:4px 0}
+.tlist .ex{display:block;padding-left:16px;font-size:12px}
 .nowcard > b a{color:inherit;text-decoration:none}
 .nowcard > b a:hover{text-decoration:underline}
 .nowcard .go a{color:inherit;margin-right:10px}
