@@ -152,7 +152,7 @@ const STRING_TYPE = {poly:'Polyester', multi:'Multifilament', gut:'Natural gut',
    amazonTag: your Associates tracking ID (e.g. 'tennisroam-20').
    twLink: the deep-link template your affiliate network gives you for Tennis Warehouse, with {url} where the
    URL-encoded product page goes (e.g. 'https://www.avantlink.com/click.php?tt=cl&mi=MERCHANT_ID&pw=YOUR_ID&url={url}'). */
-const SHOP = {amazonTag:'', twLink:''};
+const SHOP = {amazonTag:'tennisroam-20', twLink:''};
 
 /* Questions for the Strings FAQ, rendered as HTML and as FAQPage structured data */
 const STRING_FAQ = [
