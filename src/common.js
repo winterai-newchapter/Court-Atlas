@@ -82,17 +82,13 @@ function segInit(id, cb){
   }));
 }
 
-/* Product-page links for a STRING_DB entry at Tennis Warehouse and Amazon, driven by SHOP in data.js */
+/* Amazon product-page link for a STRING_DB entry, driven by SHOP in data.js */
 function buyLinks(x){
   if (typeof SHOP === 'undefined') return '';
-  const tw = `https://www.tennis-warehouse.com/${x.tw}`;
-  const shops = [
-    ['Tennis Warehouse', SHOP.twLink ? SHOP.twLink.replace('{url}', encodeURIComponent(tw)) : tw, !!SHOP.twLink],
-    ['Amazon', `https://www.amazon.com/dp/${x.amz}${SHOP.amazonTag ? `?tag=${encodeURIComponent(SHOP.amazonTag)}` : ''}`, !!SHOP.amazonTag],
-  ];
-  return shops.map(([name, url, paid]) => `<a class="buy" rel="${paid ? 'sponsored ' : ''}nofollow noopener" target="_blank" href="${esc(url)}">${name}</a>`).join('');
+  const url = `https://www.amazon.com/dp/${x.amz}${SHOP.amazonTag ? `?tag=${encodeURIComponent(SHOP.amazonTag)}` : ''}`;
+  return `<a class="buy" rel="${SHOP.amazonTag ? 'sponsored ' : ''}nofollow noopener" target="_blank" href="${esc(url)}">Amazon</a>`;
 }
-const affNote = () => (typeof SHOP !== 'undefined' && (SHOP.amazonTag || SHOP.twLink))
+const affNote = () => (typeof SHOP !== 'undefined' && SHOP.amazonTag)
   ? 'Shop links are affiliate links: Court Atlas may earn a commission at no extra cost to you. Recommendations are not paid for.' : '';
 
 /* Library swatch for a STRING_DB entry: a patch of string bed in the string's colour, with its cross-section in the corner.
