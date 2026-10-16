@@ -2,7 +2,7 @@
 
 > Follow the 2026 tennis season: a world map of ATP and WTA tournaments, live draws with win probabilities, player form and past champions. Draws and results come from Wikipedia and refresh every 15 minutes during tournaments; win probabilities are a Court Atlas Elo estimate, not betting odds.
 
-Draws last fetched 2026-10-16T20:39:49Z. Every page links to the Wikipedia pages it draws on. Shop links on the Strings page are affiliate links.
+Draws last fetched 2026-10-16T21:08:38Z. Every page links to the Wikipedia pages it draws on. Shop links on the Strings page are affiliate links.
 
 ## Topics
 
