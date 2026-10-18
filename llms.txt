@@ -2,7 +2,7 @@
 
 > Follow the 2026 tennis season: a world map of ATP and WTA tournaments, live draws with win probabilities, player form and past champions. Draws and results come from Wikipedia and refresh every 15 minutes during tournaments; win probabilities are a Court Atlas Elo estimate, not betting odds.
 
-Draws last fetched 2026-10-18T10:36:54Z. Every page links to the Wikipedia pages it draws on. Shop links on the Strings page are affiliate links.
+Draws last fetched 2026-10-18T11:35:55Z. Every page links to the Wikipedia pages it draws on. Shop links on the Strings page are affiliate links.
 
 ## Topics
 
@@ -49,7 +49,7 @@ Draws last fetched 2026-10-18T10:36:54Z. Every page links to the Wikipedia pages
 - [China Open (WTA) 2026](https://winterai-newchapter.github.io/Court-Atlas/tournament/bei.html): WTA 1000, hard, Beijing, Sep 30 – Oct 11; won by Zheng Qinwen
 - [China Open (ATP) 2026](https://winterai-newchapter.github.io/Court-Atlas/tournament/beia.html): ATP 500, hard, Beijing, Sep 30 – Oct 6; won by Novak Djokovic
 - [Japan Open 2026](https://winterai-newchapter.github.io/Court-Atlas/tournament/tyo.html): ATP 500, hard, Tokyo, Sep 30 – Oct 6; won by Carlos Alcaraz
-- [Shanghai Masters 2026](https://winterai-newchapter.github.io/Court-Atlas/tournament/sha.html): ATP 1000, hard, Shanghai, Oct 7–18
+- [Shanghai Masters 2026](https://winterai-newchapter.github.io/Court-Atlas/tournament/sha.html): ATP 1000, hard, Shanghai, Oct 7–18; won by Alejandro Davidovich Fokina
 - [Wuhan Open 2026](https://winterai-newchapter.github.io/Court-Atlas/tournament/wuh.html): WTA 1000, hard, Wuhan, Oct 12–18
 - [Pan Pacific Open 2026](https://winterai-newchapter.github.io/Court-Atlas/tournament/tyow.html): WTA 500, hard, Tokyo, Oct 26 – Nov 1
 - [WTA Finals 2026](https://winterai-newchapter.github.io/Court-Atlas/tournament/wtaf.html): WTA Season Finals, hard, Riyadh, Nov 1–8
