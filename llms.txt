@@ -2,7 +2,7 @@
 
 > Follow the 2026 tennis season: a world map of ATP and WTA tournaments, live draws with win probabilities, player form and past champions. Draws and results come from Wikipedia and refresh every 15 minutes during tournaments; win probabilities are a Court Atlas Elo estimate, not betting odds.
 
-Draws last fetched 2026-10-25T03:40:00Z. Every page links to the Wikipedia pages it draws on. Shop links on the Strings page are affiliate links.
+Draws last fetched 2026-10-27T03:26:17Z. Every page links to the Wikipedia pages it draws on. Shop links on the Strings page are affiliate links.
 
 ## Topics
 
@@ -37,23 +37,52 @@ Draws last fetched 2026-10-25T03:40:00Z. Every page links to the Wikipedia pages
 - [Chile Open 2026](https://winterai-newchapter.github.io/Court-Atlas/tournament/scl.html): ATP 250, clay, Santiago, Feb 23 – Mar 1; won by Luciano Darderi
 - [Indian Wells Open 2026](https://winterai-newchapter.github.io/Court-Atlas/tournament/iw.html): ATP & WTA 1000, hard, Indian Wells, Mar 4–15; won by Jannik Sinner and Aryna Sabalenka
 - [Miami Open 2026](https://winterai-newchapter.github.io/Court-Atlas/tournament/mia.html): ATP & WTA 1000, hard, Miami, Mar 17–29; won by Jannik Sinner and Aryna Sabalenka
+- [U.S. Men's Clay Court Championships 2026](https://winterai-newchapter.github.io/Court-Atlas/tournament/hou.html): ATP 250, clay, Houston, Mar 30 – Apr 5; won by Tommy Paul
+- [Grand Prix Hassan II 2026](https://winterai-newchapter.github.io/Court-Atlas/tournament/mrk.html): ATP 250, clay, Marrakesh, Mar 30 – Apr 5; won by Rafael Jódar
+- [Romanian Open 2026](https://winterai-newchapter.github.io/Court-Atlas/tournament/buc.html): ATP 250, clay, Bucharest, Mar 30 – Apr 5; won by Mariano Navone
 - [Monte-Carlo Masters 2026](https://winterai-newchapter.github.io/Court-Atlas/tournament/mc.html): ATP 1000, clay, Monte Carlo, Apr 5–12; won by Jannik Sinner
+- [Barcelona Open 2026](https://winterai-newchapter.github.io/Court-Atlas/tournament/bcn.html): ATP 500, clay, Barcelona, Apr 13–19; won by Arthur Fils
+- [Bavarian Championships 2026](https://winterai-newchapter.github.io/Court-Atlas/tournament/mun.html): ATP 500, clay, Munich, Apr 13–19; won by Ben Shelton
 - [Madrid Open 2026](https://winterai-newchapter.github.io/Court-Atlas/tournament/mad.html): ATP & WTA 1000, clay, Madrid, Apr 21 – May 3; won by Jannik Sinner and Marta Kostyuk
 - [Italian Open 2026](https://winterai-newchapter.github.io/Court-Atlas/tournament/rom.html): ATP & WTA 1000, clay, Rome, May 5–17; won by Jannik Sinner and Elina Svitolina
+- [Hamburg Open 2026](https://winterai-newchapter.github.io/Court-Atlas/tournament/ham.html): ATP 500, clay, Hamburg, May 17–23; won by Ignacio Buse
+- [Geneva Open 2026](https://winterai-newchapter.github.io/Court-Atlas/tournament/gva.html): ATP 250, clay, Geneva, May 17–23; won by Learner Tien
 - [Roland Garros 2026](https://winterai-newchapter.github.io/Court-Atlas/tournament/rg.html): ATP & WTA Grand Slam, clay, Paris, May 24 – Jun 7; won by Alexander Zverev and Mirra Andreeva
+- [Stuttgart Open 2026](https://winterai-newchapter.github.io/Court-Atlas/tournament/stu.html): ATP 250, grass, Stuttgart, Jun 8–14; won by Ben Shelton
+- [Rosmalen Open 2026](https://winterai-newchapter.github.io/Court-Atlas/tournament/shb.html): ATP 250, grass, 's-Hertogenbosch, Jun 8–14; won by Kamil Majchrzak
+- [Halle Open 2026](https://winterai-newchapter.github.io/Court-Atlas/tournament/hal.html): ATP 500, grass, Halle (Westfalen), Jun 15–21; won by Frances Tiafoe
+- [Queen's Club Championships 2026](https://winterai-newchapter.github.io/Court-Atlas/tournament/qcc.html): ATP 500, grass, London, Jun 15–21; won by Francisco Cerúndolo
+- [Mallorca Championships 2026](https://winterai-newchapter.github.io/Court-Atlas/tournament/mal.html): ATP 250, grass, Santa Ponsa, Jun 21–27; won by Alejandro Davidovich Fokina
+- [Eastbourne Open 2026](https://winterai-newchapter.github.io/Court-Atlas/tournament/eas.html): ATP 250, grass, Eastbourne, Jun 22–28; won by Zizou Bergs
 - [Wimbledon 2026](https://winterai-newchapter.github.io/Court-Atlas/tournament/wim.html): ATP & WTA Grand Slam, grass, London, Jun 29 – Jul 12; won by Jannik Sinner and Linda Nosková
+- [Swedish Open 2026](https://winterai-newchapter.github.io/Court-Atlas/tournament/bst.html): ATP 250, clay, Båstad, Jul 13–19; won by Andrey Rublev
+- [Swiss Open 2026](https://winterai-newchapter.github.io/Court-Atlas/tournament/gst.html): ATP 250, clay, Gstaad, Jul 13–19; won by Stefanos Tsitsipas
+- [Croatia Open 2026](https://winterai-newchapter.github.io/Court-Atlas/tournament/uma.html): ATP 250, clay, Umag, Jul 13–18; won by Daniel Mérida
+- [Austrian Open 2026](https://winterai-newchapter.github.io/Court-Atlas/tournament/kit.html): ATP 250, clay, Kitzbühel, Jul 20–25; won by Quentin Halys
+- [Estoril Open 2026](https://winterai-newchapter.github.io/Court-Atlas/tournament/est.html): ATP 250, clay, Estoril, Jul 20–26; won by Luca Van Assche
+- [Washington Open 2026](https://winterai-newchapter.github.io/Court-Atlas/tournament/was.html): ATP 500, hard, Washington, D.C., Jul 27 – Aug 3; won by Taylor Fritz
+- [Los Cabos Open 2026](https://winterai-newchapter.github.io/Court-Atlas/tournament/cab.html): ATP 250, hard, Los Cabos, Jul 27 – Aug 1; won by Arthur Géa
 - [Canadian Open (ATP) 2026](https://winterai-newchapter.github.io/Court-Atlas/tournament/can.html): ATP 1000, hard, Montreal, Aug 2–13; won by Ben Shelton
 - [Canadian Open (WTA) 2026](https://winterai-newchapter.github.io/Court-Atlas/tournament/canw.html): WTA 1000, hard, Toronto, Aug 2–13; won by Iga Świątek
 - [Cincinnati Open 2026](https://winterai-newchapter.github.io/Court-Atlas/tournament/cin.html): ATP & WTA 1000, hard, Mason, Ohio, Aug 13–24; won by Arthur Fils and Coco Gauff
+- [Winston-Salem Open 2026](https://winterai-newchapter.github.io/Court-Atlas/tournament/wsa.html): ATP 250, hard, Winston-Salem, Aug 23–29; won by Ignacio Buse
 - [US Open 2026](https://winterai-newchapter.github.io/Court-Atlas/tournament/uso.html): ATP & WTA Grand Slam, hard, New York, Aug 30 – Sep 13; won by Alexander Zverev and Elena Rybakina
+- [Chengdu Open 2026](https://winterai-newchapter.github.io/Court-Atlas/tournament/chd.html): ATP 250, hard, Chengdu, Sep 23–29; won by Alejandro Davidovich Fokina
+- [Hangzhou Open 2026](https://winterai-newchapter.github.io/Court-Atlas/tournament/hgz.html): ATP 250, hard, Hangzhou, Sep 23–29; won by Daniil Medvedev
 - [China Open (WTA) 2026](https://winterai-newchapter.github.io/Court-Atlas/tournament/bei.html): WTA 1000, hard, Beijing, Sep 30 – Oct 11; won by Zheng Qinwen
 - [China Open (ATP) 2026](https://winterai-newchapter.github.io/Court-Atlas/tournament/beia.html): ATP 500, hard, Beijing, Sep 30 – Oct 6; won by Novak Djokovic
 - [Japan Open 2026](https://winterai-newchapter.github.io/Court-Atlas/tournament/tyo.html): ATP 500, hard, Tokyo, Sep 30 – Oct 6; won by Carlos Alcaraz
 - [Shanghai Masters 2026](https://winterai-newchapter.github.io/Court-Atlas/tournament/sha.html): ATP 1000, hard, Shanghai, Oct 7–18; won by Alejandro Davidovich Fokina
 - [Wuhan Open 2026](https://winterai-newchapter.github.io/Court-Atlas/tournament/wuh.html): WTA 1000, hard, Wuhan, Oct 12–18
+- [Almaty Open 2026](https://winterai-newchapter.github.io/Court-Atlas/tournament/ala.html): ATP 250, hard, Almaty, Oct 19–25; won by Daniil Medvedev
+- [Lyon Open 2026](https://winterai-newchapter.github.io/Court-Atlas/tournament/lyo.html): ATP 250, hard, Lyon, Oct 19–25; won by Lorenzo Musetti
+- [European Open 2026](https://winterai-newchapter.github.io/Court-Atlas/tournament/bru.html): ATP 250, hard, Brussels, Oct 19–25; won by Tallon Griekspoor
 - [Pan Pacific Open 2026](https://winterai-newchapter.github.io/Court-Atlas/tournament/tyow.html): WTA 500, hard, Tokyo, Oct 26 – Nov 1
+- [Swiss Indoors 2026](https://winterai-newchapter.github.io/Court-Atlas/tournament/bsl.html): ATP 500, hard, Basel, Oct 26 – Nov 1
+- [Vienna Open 2026](https://winterai-newchapter.github.io/Court-Atlas/tournament/vie.html): ATP 500, hard, Vienna, Oct 26 – Nov 1
 - [WTA Finals 2026](https://winterai-newchapter.github.io/Court-Atlas/tournament/wtaf.html): WTA Season Finals, hard, Riyadh, Nov 1–8
-- [Paris Masters 2026](https://winterai-newchapter.github.io/Court-Atlas/tournament/par.html): ATP 1000, hard, Paris, Nov 2–8
+- [Paris Masters 2026](https://winterai-newchapter.github.io/Court-Atlas/tournament/par.html): ATP 1000, hard, Paris (Nanterre), Nov 2–8
+- [Stockholm Open 2026](https://winterai-newchapter.github.io/Court-Atlas/tournament/sto.html): ATP 250, hard, Stockholm, Nov 8–14
 - [ATP Finals 2026](https://winterai-newchapter.github.io/Court-Atlas/tournament/atpf.html): ATP Season Finals, hard, Turin, Nov 15–22
 - [Davis Cup Final 8 2026](https://winterai-newchapter.github.io/Court-Atlas/tournament/dc.html): ATP Team event, hard, Bologna, Nov 24–29
 
@@ -82,5 +111,5 @@ Draws last fetched 2026-10-25T03:40:00Z. Every page links to the Wikipedia pages
 
 ## Optional
 
-- [All 443 player pages](https://winterai-newchapter.github.io/Court-Atlas/players.html): results, last 10 matches, surface win rates, head-to-head and Elo for every player in the covered draws
+- [All 513 player pages](https://winterai-newchapter.github.io/Court-Atlas/players.html): results, last 10 matches, surface win rates, head-to-head and Elo for every player in the covered draws
 - [Sitemap](https://winterai-newchapter.github.io/Court-Atlas/sitemap.xml)
