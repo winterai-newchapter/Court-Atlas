@@ -3,7 +3,8 @@
 name: Refresh draws
 on:
   schedule:
-    - cron: '*/15 * * * *'
+    # Off the :00/:15/:30/:45 marks, where GitHub delays or drops scheduled runs most
+    - cron: '7,22,37,52 * * * *'
   workflow_dispatch:
 permissions:
   contents: write
