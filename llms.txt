@@ -2,7 +2,7 @@
 
 > Follow the 2026 tennis season: a world map of ATP and WTA tournaments, live draws with win probabilities, player form and past champions. Draws and results come from Wikipedia and refresh every 15 minutes during tournaments; win probabilities are a Court Atlas Elo estimate, not betting odds.
 
-Draws last fetched 2026-11-01T13:29:50Z. Every page links to the Wikipedia pages it draws on. Shop links on the Strings page are affiliate links.
+Draws last fetched 2026-11-01T18:29:53Z. Every page links to the Wikipedia pages it draws on. Shop links on the Strings page are affiliate links.
 
 ## Topics
 
@@ -78,8 +78,8 @@ Draws last fetched 2026-11-01T13:29:50Z. Every page links to the Wikipedia pages
 - [Lyon Open 2026](https://winterai-newchapter.github.io/Court-Atlas/tournament/lyo.html): ATP 250, hard, Lyon, Oct 19–25; won by Lorenzo Musetti
 - [European Open 2026](https://winterai-newchapter.github.io/Court-Atlas/tournament/bru.html): ATP 250, hard, Brussels, Oct 19–25; won by Tallon Griekspoor
 - [Pan Pacific Open 2026](https://winterai-newchapter.github.io/Court-Atlas/tournament/tyow.html): WTA 500, hard, Tokyo, Oct 26 – Nov 1
-- [Swiss Indoors 2026](https://winterai-newchapter.github.io/Court-Atlas/tournament/bsl.html): ATP 500, hard, Basel, Oct 26 – Nov 1
-- [Vienna Open 2026](https://winterai-newchapter.github.io/Court-Atlas/tournament/vie.html): ATP 500, hard, Vienna, Oct 26 – Nov 1
+- [Swiss Indoors 2026](https://winterai-newchapter.github.io/Court-Atlas/tournament/bsl.html): ATP 500, hard, Basel, Oct 26 – Nov 1; won by Valentin Vacherot
+- [Vienna Open 2026](https://winterai-newchapter.github.io/Court-Atlas/tournament/vie.html): ATP 500, hard, Vienna, Oct 26 – Nov 1; won by Carlos Alcaraz
 - [WTA Finals 2026](https://winterai-newchapter.github.io/Court-Atlas/tournament/wtaf.html): WTA Season Finals, hard, Riyadh, Nov 1–8
 - [Paris Masters 2026](https://winterai-newchapter.github.io/Court-Atlas/tournament/par.html): ATP 1000, hard, Paris (Nanterre), Nov 2–8
 - [Stockholm Open 2026](https://winterai-newchapter.github.io/Court-Atlas/tournament/sto.html): ATP 250, hard, Stockholm, Nov 8–14
