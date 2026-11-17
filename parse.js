@@ -3,15 +3,15 @@
 const WIKIDRAW = (() => {
   const slug = n => n.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/ł/g, 'l').replace(/ø/g, 'o').replace(/đ/g, 'd')
     .toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
-  const ROUND_ORDER = ['first round','second round','third round','fourth round','quarterfinals','semifinals','final'];
+  const ROUND_ORDER = ['first round','second round','third round','fourth round','round robin','quarterfinals','semifinals','final'];
   const roundIx = label => { const i = ROUND_ORDER.indexOf(label.toLowerCase().trim()); return i < 0 ? 99 : i; };
 
-  // Pull every {{nTeamBracket...}} template out of the wikitext, matching braces.
-  function brackets(text){
+  // Pull every {{nTeamBracket...}} (or, with kind 'RR', {{nTeamRR...}}) template out of the wikitext, matching braces.
+  function brackets(text, kind = 'Bracket'){
     const res = [];
     let i = 0;
     while ((i = text.indexOf('{{', i)) >= 0){
-      if (!/^\{\{\s*\d+TeamBracket/.test(text.slice(i, i + 40))){ i += 2; continue; }
+      if (!new RegExp('^\\{\\{\\s*\\d+Team' + kind).test(text.slice(i, i + 40))){ i += 2; continue; }
       let depth = 0, j = i;
       for (; j < text.length; j++){
         if (text.startsWith('{{', j)){ depth++; j++; }
@@ -60,6 +60,55 @@ const WIKIDRAW = (() => {
     return sets.join(', ') + (fl === 'r' ? ' ret.' : fl === 'd' ? ' def.' : '');
   }
 
+  // Round-robin group tables put several |key=value pairs on one line, so split on pipes outside [[...]] and {{...}}.
+  function rrParams(tpl){
+    const p = {}, body = tpl.slice(2, -2), parts = [];
+    let depth = 0, start = 0;
+    for (let i = 0; i < body.length; i++){
+      const two = body.slice(i, i + 2);
+      if (two === '{{' || two === '[['){ depth++; i++; }
+      else if (two === '}}' || two === ']]'){ depth--; i++; }
+      else if (body[i] === '|' && !depth){ parts.push(body.slice(start, i)); start = i + 1; }
+    }
+    parts.push(body.slice(start));
+    for (const part of parts){
+      const m = part.match(/^\s*([A-Za-z0-9/-]+)\s*=([\s\S]*)$/);
+      if (m) p[m[1]] = m[2].trim();
+    }
+    return p;
+  }
+  // Bold winner's view "6–2, 7–6<sup>(7–4)</sup>" -> "6–2, 7–6(4)" (loser's tiebreak points, as in the brackets)
+  function rrScore(v){
+    let s = v.replace(/'''/g, '').replace(/&nbsp;/g, ' ').trim();
+    if (/w\/o/i.test(s)) return 'w/o';
+    s = s.replace(/<sup>\s*\(?\s*(\d+)\s*[–-]\s*(\d+)\s*\)?\s*<\/sup>/g, (_, a, b) => `(${Math.min(+a, +b)})`)
+      .replace(/<sup>\s*\(?\s*(\d+)\s*\)?\s*<\/sup>/g, '($1)').replace(/<[^>]+>/g, '').replace(/(\d)\s*-\s*(\d)/g, '$1–$2');
+    return s.replace(/\s*\b(ret|retired|def)\.?\s*$/i, (_, f) => f.toLowerCase().startsWith('d') ? ' def.' : ' ret.');
+  }
+  // Every pairing of each {{nTeamRR}} group: played ones carry the winner (the bold side) and score, the rest stay pending.
+  function roundRobin(body, seen, entry){
+    for (const tpl of brackets(body, 'RR')){
+      const p = rrParams(tpl), teams = {};
+      for (let n = 1; p[`team-${n}`] !== undefined; n++){
+        const t = team(p[`team-${n}`]);
+        if (!t) continue;
+        teams[n] = t;
+        const sd = (p[`seed-${n}`] || '').replace(/<[^>]+>/g, '').replace(/&nbsp;/g, '').trim();
+        entry[t.name] = entry[t.name] || {flag: t.flag, seed: '', article: t.article};
+        if (sd) entry[t.name].seed = sd;
+        if (t.flag) entry[t.name].flag = t.flag;
+      }
+      const ns = Object.keys(teams).map(Number);
+      for (const i of ns) for (const j of ns){
+        if (j <= i) continue;
+        const ij = p[`${i}v${j}`] || '', ji = p[`${j}v${i}`] || '';
+        const w = ij.includes("'''") ? 0 : ji.includes("'''") ? 1 : -1;
+        const a = teams[i].name, b = teams[j].name;
+        seen.set('round robin|' + [a, b].sort().join('|'), {round: 'Round robin', a, b, w, sc: w < 0 ? '' : rrScore(w === 0 ? ij : ji)});
+      }
+    }
+  }
+
   function parseDraw(text){
     const cut = text.search(/^==\s*Qualifying/m);
     const body = cut > 0 ? text.slice(0, cut) : text;
@@ -91,6 +140,7 @@ const WIKIDRAW = (() => {
         }
       }
     }
+    roundRobin(body, seen, entry);
     const matches = [...seen.values()].sort((x, y) => roundIx(x.round) - roundIx(y.round));
     return {matches, entry};
   }

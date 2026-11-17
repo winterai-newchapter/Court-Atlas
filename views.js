@@ -41,7 +41,7 @@ const srcLine = (...keys) => {
 const srcStatic = (links, note) => `<p class="src">Source: ${links.map(([u, l]) => `<a href="${u}" rel="external">${esc(l)}</a>`).join(', ')}${note ? ` · ${note}` : ''}</p>`;
 
 /* ---------- matches ---------- */
-const ROUND_ORDER = ['first round','second round','third round','fourth round','quarterfinals','semifinals','final'];
+const ROUND_ORDER = ['first round','second round','third round','fourth round','round robin','quarterfinals','semifinals','final'];
 const rIx = label => { const i = ROUND_ORDER.indexOf(label.toLowerCase()); return i < 0 ? 99 : i; };
 // MATCHES, BYP and ELO are filled by reindex() below, and rebuilt in place when live.js brings in newer draws
 const MATCHES = [];

@@ -68,7 +68,7 @@ const T = [
  {id:'par',name:'Paris Masters',city:'Paris (Nanterre)',co:'France',lat:48.9,lon:2.23,s:'2026-11-02',e:'2026-11-08',lv:'1000',tour:'ATP',sf:'hard',indoor:true,res:[]},
  {id:'wtaf',name:'WTA Finals',city:'Riyadh',co:'Saudi Arabia',lat:24.71,lon:46.68,s:'2026-11-01',e:'2026-11-08',lv:'Finals',tour:'WTA',sf:'hard',indoor:true,res:[],approx:true},
  {id:'sto',name:'Stockholm Open',city:'Stockholm',co:'Sweden',lat:59.35,lon:18.08,s:'2026-11-08',e:'2026-11-14',lv:'250',tour:'ATP',sf:'hard',indoor:true,res:[]},
- {id:'atpf',name:'ATP Finals',city:'Turin',co:'Italy',lat:45.07,lon:7.69,s:'2026-11-15',e:'2026-11-22',lv:'Finals',tour:'ATP',sf:'hard',indoor:true,res:[],approx:true},
+ {id:'atpf',name:'ATP Finals',city:'Turin',co:'Italy',lat:45.07,lon:7.69,s:'2026-11-15',e:'2026-11-22',lv:'Finals',tour:'ATP',sf:'hard',indoor:true,w:{ATP:"2026 ATP Finals – Singles"},res:[]},
  {id:'dc',name:'Davis Cup Final 8',city:'Bologna',co:'Italy',lat:44.49,lon:11.34,s:'2026-11-24',e:'2026-11-29',lv:'Team',tour:'ATP',sf:'hard',indoor:true,res:[],approx:true},
 ];
 const LV = {GS:{n:'Grand Slam',r:9},Finals:{n:'Season Finals',r:7.5},'1000':{n:'1000',r:7},Team:{n:'Team event',r:6},'500':{n:'500',r:5.5},'250':{n:'250',r:4.5}};
