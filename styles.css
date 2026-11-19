@@ -464,3 +464,20 @@ a.buy::after{content:" ↗"}
 .snews h3{font-size:16px;line-height:1.3;margin:0}
 .snews h3 a{color:inherit;text-underline-offset:3px}
 .snews p:last-child{font-size:14px;color:var(--muted);margin:0}
+.snews-more{margin-top:12px}
+.snews-more > summary{cursor:pointer;font-size:14px;font-weight:600;color:var(--accent);width:max-content;max-width:100%}
+
+/* Strings: "On this page" index */
+.otp{margin-top:28px;padding:18px 20px;display:flex;flex-direction:column;gap:14px}
+.otp-head{display:flex;align-items:baseline;justify-content:space-between;gap:8px 16px;flex-wrap:wrap}
+.otp-groups{display:grid;grid-template-columns:1.4fr repeat(3,minmax(0,1fr));gap:20px}
+@media (max-width:1000px){.otp-groups{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:560px){.otp{padding:14px 16px}.otp-groups{grid-template-columns:1fr}}
+.otp-g h2{font-size:12px;letter-spacing:.08em;text-transform:uppercase;font-weight:700;padding-bottom:6px;border-bottom:2px solid var(--ink);margin:0 0 8px}
+.otp-g.fresh h2{border-color:var(--ball)}
+.otp-g ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.otp-g li{display:flex;flex-wrap:wrap;align-items:center;gap:2px 8px;font-size:14px}
+.otp-g li a{font-weight:600;color:var(--ink);text-underline-offset:3px}
+.otp-g li .ex{flex-basis:100%;font-size:12.5px}
+.otp-g.fresh .chip{background:var(--ball);color:var(--ball-ink)}
+main section[id],#contents{scroll-margin-top:72px}

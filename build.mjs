@@ -180,8 +180,13 @@ const stringFaq = V.STRING_FAQ.map(([q, a]) => `<details class="round faq"><summ
 // String news and sources, rendered from STRING_NEWS / STRING_SOURCES in data.js
 const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 const newsDate = d => { const [y, m, dd] = d.split('-'); return !m ? y : dd ? `${MONTHS[m - 1].slice(0, 3)} ${+dd}, ${y}` : `${MONTHS[m - 1]} ${y}`; };
-const stringNews = `<ol class="snews">${V.STRING_NEWS.map(x => { const s = V.STRING_SOURCES[x.src];
-  return `<li class="panel"><p class="eyebrow"><span class="chip">${V.esc(x.kind)}</span> <time datetime="${x.d}">${newsDate(x.d)}</time> · ${V.esc(s.n)}</p><h3><a href="${attr(x.url)}" target="_blank" rel="noopener">${V.esc(x.n)}</a></h3><p>${V.esc(x.sum)}</p></li>`; }).join('')}</ol>`;
+// The news section sits at the top of the page, so only the newest items show; the rest fold away.
+const NEWS_SHOWN = 3;
+const newsItem = x => { const s = V.STRING_SOURCES[x.src];
+  return `<li class="panel"><p class="eyebrow"><span class="chip">${V.esc(x.kind)}</span> <time datetime="${x.d}">${newsDate(x.d)}</time> · ${V.esc(s.n)}</p><h3><a href="${attr(x.url)}" target="_blank" rel="noopener">${V.esc(x.n)}</a></h3><p>${V.esc(x.sum)}</p></li>`; };
+const olderNews = V.STRING_NEWS.slice(NEWS_SHOWN);
+const stringNews = `<ol class="snews">${V.STRING_NEWS.slice(0, NEWS_SHOWN).map(newsItem).join('')}</ol>`
+  + (olderNews.length ? `<details class="snews-more"><summary>Show ${olderNews.length} earlier item${olderNews.length > 1 ? 's' : ''}</summary><ol class="snews">${olderNews.map(newsItem).join('')}</ol></details>` : '');
 const stringSources = `<div class="explain">${Object.values(V.STRING_SOURCES).map(s => `<div><p class="eyebrow">${V.esc(s.kind)}${s.aff ? ' · earns from sales' : ''}</p><h3><a href="${attr(s.url)}" target="_blank" rel="noopener">${V.esc(s.n)}</a></h3><p>${s.who ? V.esc(s.who) + '. ' : ''}${V.esc(s.good)}</p><p><b>Keep in mind:</b> ${V.esc(s.watch)}</p></div>`).join('')}</div>`;
 const newsChecked = (() => { const [y, m, d] = V.STRING_NEWS_CHECKED.split('-'); return `${MONTHS[m - 1]} ${+d}, ${y}`; })();
 // Function replacers, so a "$$" in the inserted HTML (price tiers) is not read as a replacement pattern
