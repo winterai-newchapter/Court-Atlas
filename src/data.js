@@ -180,6 +180,46 @@ const STRING_TYPE = {poly:'Polyester', multi:'Multifilament', gut:'Natural gut',
    amazonTag: your Associates tracking ID (e.g. 'tennisroam-20'); leave it empty and links still work but earn nothing. */
 const SHOP = {amazonTag:'tennisroam-20'};
 
+/* String news for the Strings page, newest first. Updated by hand or by the weekly string-news routine.
+   d: ISO date (YYYY-MM or YYYY-MM-DD, as the source prints it) · src: a key of STRING_SOURCES · kind: Review | Release | Test | Roundup
+   n: the string or topic · sum: one factual sentence in Court Atlas words (no quotes longer than a few words) · url: the article itself,
+   or the source's string archive when the article URL is not known. Keep about 8–12 items; drop the oldest. */
+const STRING_NEWS_CHECKED = '2026-11-19';
+const STRING_NEWS = [
+ {d:'2026-11', src:'tw', kind:'Review', n:'Babolat RPM Blast', sum:'Tennis Warehouse re-reviewed the eight-sided co-poly and scored it 8.3 overall, with spin (9) far ahead of power (5.2). Still firm and quick to lose tension, so not a beginner string.', url:'https://www.tennis-warehouse.com/learning_center/string_reviews/BABRPMreview.html?pcode=BRPMB16'},
+ {d:'2026-07-13', src:'nerd', kind:'Review', n:'Toroline Cash', sum:'A control-first poly developed with doubles player Julien Cash. The reviewer found it works for singles as well as doubles.', url:'https://www.tennisnerd.net/category/gear/strings/string-reviews'},
+ {d:'2026-06-20', src:'nerd', kind:'Review', n:'Tecnifibre Razor Spin', sum:'A four-sided version of Razor Code for more bite. After a full playtest the reviewer liked it despite usually disliking square strings.', url:'https://www.tennisnerd.net/category/gear/strings/string-reviews'},
+ {d:'2026-05-04', src:'nerd', kind:'Review', n:'HEAD Velocity MLT', sum:'A durable multifilament that leans toward control rather than power. Recommended for players moving off poly or nursing a sore arm.', url:'https://www.tennisnerd.net/category/gear/strings/string-reviews'},
+ {d:'2026', src:'nerd', kind:'Test', n:'Best strings for spin, 2026 playtest', sum:'HighString Zeus came out on top, a round poly with strong spin and control that held tension into hours 12–14; Restring Zero and Silvester Hepta-Plus were close behind.', url:'https://www.tennisnerd.net/gear/strings/the-5-best-tennis-strings-for-spin-2026-playtest/63943'},
+ {d:'2026', src:'tc', kind:'Roundup', n:'Best tennis strings for 2026', sum:'Category picks: Luxilon ALU Power (poly), Solinco Hyper-G Soft (soft poly), Wilson NXT (multifilament), Babolat Touch VS (gut), Prince Synthetic Gut, Wilson Champion’s Choice (hybrid).', url:'https://tenniscompanion.org/best-tennis-strings/'},
+ {d:'2026-03', src:'nerd', kind:'Review', n:'Luxilon Element Soft', sum:'Tested in a Wilson Blade 98: a softer feel than Luxilon’s other polys without turning bouncy. One to try if ALU Power feels too harsh.', url:'https://www.tennisnerd.net/category/gear/strings/string-reviews'},
+ {d:'2026-03', src:'nerd', kind:'Review', n:'Genesis Infinite Blue 1.23', sum:'A thin, crisp, spin-friendly poly the reviewer thinks gets too little attention.', url:'https://www.tennisnerd.net/category/gear/strings/string-reviews'},
+ {d:'2026-01-23', src:'nerd', kind:'Release', n:'Yonex Poly Tour Force', sum:'A new Yonex poly in ruby red or black, aimed at medium to fast swings.', url:'https://www.tennisnerd.net/gear/strings/yonex-polytour-force/62955'},
+ {d:'2025-10-08', src:'tw', kind:'Test', n:'Tennis Warehouse adds Zenniz court data', sum:'Tennis Warehouse began measuring its racket and string playtests with Zenniz smart-court tracking, the first big retailer to put objective on-court numbers in reviews.', url:'https://www.si.com/onsi/serve/news/tennis-warehouse-transforms-online-reviews-smart-court-analytics'},
+];
+
+/* Where the string news comes from, and how to read each source. aff: earns money from sales or links */
+const STRING_SOURCES = {
+ twu: {n:'Tennis Warehouse University', who:'Crawford Lindsey', url:'https://twu.tennis-warehouse.com/learning_center/', kind:'Lab data', aff:false,
+   good:'The most scientific source. Lindsey co-wrote a tennis physics book with Howard Brody and Rod Cross, and the lab measures every string’s stiffness, tension loss and spin potential on its own machines.',
+   watch:'Objective, but the numbers take some work to interpret.'},
+ tw: {n:'Tennis Warehouse reviews', who:'TW playtest team', url:'https://www.tennis-warehouse.com/reviewedstrings.html', kind:'Playtests', aff:true,
+   good:'Structured, scored playtests from a team of regular testers, now backed by Zenniz on-court tracking data.',
+   watch:'Tennis Warehouse sells the strings it reviews.'},
+ nerd: {n:'Tennisnerd', who:'Jonas Eriksson and team', url:'https://www.tennisnerd.net/category/gear/strings', kind:'Reviews & video', aff:true,
+   good:'Europe-based blog and YouTube channel that plays new and small brands early and describes feel unusually well.',
+   watch:'Subjective impressions from a few testers.'},
+ tc: {n:'TennisCompanion', who:'Jon Crim', url:'https://tenniscompanion.org/best-tennis-strings/', kind:'Best-of lists', aff:true,
+   good:'Category “best” picks scored for power, spin, control, feel, comfort and durability.',
+   watch:'Earns commission through its shop links, as it discloses.'},
+ tribe: {n:'The Tennis Tribe', who:'', url:'https://thetennistribe.com/', kind:'Picks by level', aff:true,
+   good:'Recommendations sorted by playing level, handy for beginners and improvers.',
+   watch:'Also funded by affiliate links.'},
+ community: {n:'Stringforum.net & Talk Tennis', who:'Player community', url:'https://www.stringforum.net/', kind:'User ratings', aff:false,
+   good:'Stringforum’s database of player ratings and the Talk Tennis forum, where serious players report long-term durability and tension loss.',
+   watch:'Opinions vary widely; look for patterns across many posts.'},
+};
+
 /* Questions for the Strings FAQ, rendered as HTML and as FAQPage structured data */
 const STRING_FAQ = [
  ['What tennis string should a beginner use?', 'A synthetic gut or a multifilament at a mid tension, around 24–25 kg (53–55 lbs). Both are cheap or comfortable enough that you can learn what you like before spending more. Avoid stiff polyester until your swing is long and fast enough to use it.'],

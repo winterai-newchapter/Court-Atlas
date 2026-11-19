@@ -44,7 +44,7 @@ const asset = (base, f) => `${base}${f}?v=${VER[f]}`;
 
 // The same data and view code the browser runs, evaluated here to render static pages
 const V = new Function(['data.js','draws.js','common.js','views.js'].map(f => fs.readFileSync(`src/${f}`, 'utf8')).join('\n;\n')
-  + '\nreturn {STRING_DB, STRING_TYPE, STRING_FAQ, buyLinks, affNote, stringSwatch, T, LV, SF, ST, PEOPLE, DRAWS, SRC, FETCHED, TOP, MATCHES, PLAYERS, RACKETS, setBase, methodNote, tournamentBody, playerBody, status, range, pTour, record, esc, et, pName, pWiki, drawKeys,'
+  + '\nreturn {STRING_DB, STRING_TYPE, STRING_FAQ, STRING_NEWS, STRING_NEWS_CHECKED, STRING_SOURCES, buyLinks, affNote, stringSwatch, T, LV, SF, ST, PEOPLE, DRAWS, SRC, FETCHED, TOP, MATCHES, PLAYERS, RACKETS, setBase, methodNote, tournamentBody, playerBody, status, range, pTour, record, esc, et, pName, pWiki, drawKeys,'
   + ' timelineHtml, recordsHtml, slam4Html, racketTable, champsTable, champsBoard, slamBoard, recentList, storylines, storyCard, statsHtml, statsSrc, topPlayers, playerCards, playerDetail};')();
 
 // Writes HTML into the element with the given id: its text or empty content is replaced, so crawlers that do not run
@@ -177,8 +177,15 @@ const PRERENDER = {
 // String library table and FAQ, rendered as static HTML so search engines and AI crawlers can read them
 const stringLib = `<div class="panel tablebox" style="padding:8px 14px"><table id="lib"><thead><tr><th>String</th><th>Type</th><th>Shape</th><th class="n">Gauges (mm)</th><th>Price</th><th>Good for</th><th>Shop</th></tr></thead><tbody>${V.STRING_DB.map(x => `<tr data-ty="${x.ty}"><td><div class="sname">${V.stringSwatch(x)}<div><b>${V.esc(x.n)}</b><div class="ex">${V.esc(x.note)}</div></div></div></td><td>${V.STRING_TYPE[x.ty]}</td><td>${V.esc(x.sh)}</td><td class="n">${x.g.map(g => g.toFixed(2)).join(' / ')}</td><td class="num">${'$'.repeat(x.tier)}</td><td>${x.tags.map(t => `<span class="chip">${t}</span>`).join(' ')}</td><td><div class="buys">${V.buyLinks(x)}</div></td></tr>`).join('')}</tbody></table></div>`;
 const stringFaq = V.STRING_FAQ.map(([q, a]) => `<details class="round faq"><summary>${V.esc(q)}</summary><p>${V.esc(a)}</p></details>`).join('');
+// String news and sources, rendered from STRING_NEWS / STRING_SOURCES in data.js
+const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+const newsDate = d => { const [y, m, dd] = d.split('-'); return !m ? y : dd ? `${MONTHS[m - 1].slice(0, 3)} ${+dd}, ${y}` : `${MONTHS[m - 1]} ${y}`; };
+const stringNews = `<ol class="snews">${V.STRING_NEWS.map(x => { const s = V.STRING_SOURCES[x.src];
+  return `<li class="panel"><p class="eyebrow"><span class="chip">${V.esc(x.kind)}</span> <time datetime="${x.d}">${newsDate(x.d)}</time> · ${V.esc(s.n)}</p><h3><a href="${attr(x.url)}" target="_blank" rel="noopener">${V.esc(x.n)}</a></h3><p>${V.esc(x.sum)}</p></li>`; }).join('')}</ol>`;
+const stringSources = `<div class="explain">${Object.values(V.STRING_SOURCES).map(s => `<div><p class="eyebrow">${V.esc(s.kind)}${s.aff ? ' · earns from sales' : ''}</p><h3><a href="${attr(s.url)}" target="_blank" rel="noopener">${V.esc(s.n)}</a></h3><p>${s.who ? V.esc(s.who) + '. ' : ''}${V.esc(s.good)}</p><p><b>Keep in mind:</b> ${V.esc(s.watch)}</p></div>`).join('')}</div>`;
+const newsChecked = (() => { const [y, m, d] = V.STRING_NEWS_CHECKED.split('-'); return `${MONTHS[m - 1]} ${+d}, ${y}`; })();
 // Function replacers, so a "$$" in the inserted HTML (price tiers) is not read as a replacement pattern
-const fill = src => src.replace('<!--STRING_LIB-->', () => stringLib).replace('<!--STRING_FAQ-->', () => stringFaq).replace(/<!--AFF_NOTE-->/g, () => V.affNote() ? V.affNote() + ' ' : '');
+const fill = src => src.replace('<!--STRING_LIB-->', () => stringLib).replace('<!--STRING_FAQ-->', () => stringFaq).replace('<!--STRING_NEWS-->', () => stringNews).replace('<!--STRING_SOURCES-->', () => stringSources).replace(/<!--NEWS_CHECKED-->/g, () => newsChecked).replace(/<!--AFF_NOTE-->/g, () => V.affNote() ? V.affNote() + ' ' : '');
 const pageLd = {
   season: () => ({'@context':'https://schema.org', '@type':'ItemList', name:'2026 tennis tournaments',
     itemListElement: V.T.map((t, i) => ({'@type':'ListItem', position:i + 1, url:`${SITE}tournament/${t.id}.html`, name:t.name}))}),
