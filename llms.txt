@@ -2,7 +2,7 @@
 
 > Follow the 2026 tennis season: a world map of ATP and WTA tournaments, live draws with win probabilities, player form and past champions. Draws and results come from Wikipedia and refresh every 15 minutes during tournaments; win probabilities are a Court Atlas Elo estimate, not betting odds.
 
-Draws last fetched 2026-11-21T23:53:17Z. Every page links to the Wikipedia pages it draws on. Shop links on the Strings page are affiliate links.
+Draws last fetched 2026-11-22T20:48:02Z. Every page links to the Wikipedia pages it draws on. Shop links on the Strings page are affiliate links.
 
 ## Topics
 
@@ -83,7 +83,7 @@ Draws last fetched 2026-11-21T23:53:17Z. Every page links to the Wikipedia pages
 - [WTA Finals 2026](https://winterai-newchapter.github.io/Court-Atlas/tournament/wtaf.html): WTA Season Finals, hard, Riyadh, Nov 1–8
 - [Paris Masters 2026](https://winterai-newchapter.github.io/Court-Atlas/tournament/par.html): ATP 1000, hard, Paris (Nanterre), Nov 2–8
 - [Stockholm Open 2026](https://winterai-newchapter.github.io/Court-Atlas/tournament/sto.html): ATP 250, hard, Stockholm, Nov 8–14
-- [ATP Finals 2026](https://winterai-newchapter.github.io/Court-Atlas/tournament/atpf.html): ATP Season Finals, hard, Turin, Nov 15–22
+- [ATP Finals 2026](https://winterai-newchapter.github.io/Court-Atlas/tournament/atpf.html): ATP Season Finals, hard, Turin, Nov 15–22; won by Carlos Alcaraz
 - [Davis Cup Final 8 2026](https://winterai-newchapter.github.io/Court-Atlas/tournament/dc.html): ATP Team event, hard, Bologna, Nov 24–29
 
 ## Top 10 players (rankings of September 28, 2026)
