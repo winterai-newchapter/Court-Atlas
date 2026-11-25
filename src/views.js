@@ -219,6 +219,83 @@ const matchLine = (m, focus) => {
   const w = winner(m), l = loser(m);
   return `<li class="${focus ? (w === focus ? 'won' : 'lost') : ''}"><span><b>${pLink(w)}</b> <span class="ex">d.</span> ${pLink(l)}</span><span class="mono ex">${esc(m.sc || '—')}</span></li>`;
 };
+/* ---------- team events (Davis Cup Finals, from TIES) ---------- */
+const NATION = {ARG:'Argentina', AUS:'Australia', AUT:'Austria', BEL:'Belgium', BRA:'Brazil', CAN:'Canada', CHI:'Chile', COL:'Colombia',
+  CRO:'Croatia', CZE:'Czechia', DEN:'Denmark', ESP:'Spain', FIN:'Finland', FRA:'France', GBR:'Great Britain', GER:'Germany', GRE:'Greece',
+  HUN:'Hungary', ITA:'Italy', JPN:'Japan', KAZ:'Kazakhstan', KOR:'South Korea', NED:'Netherlands', NOR:'Norway', POL:'Poland',
+  POR:'Portugal', SRB:'Serbia', SUI:'Switzerland', SWE:'Sweden', USA:'United States'};
+const nation = c => NATION[c] || c;
+const tieKey = t => typeof TIES !== 'undefined' && TIES[`${t.id}/Team`] ? `${t.id}/Team` : null;
+const WD = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+const dayLabel = s => s ? `${WD[d(s).getDay()]}, ${fmt(s)}` : 'Date TBA';
+const isoDay = x => `${x.getFullYear()}-${String(x.getMonth() + 1).padStart(2, '0')}-${String(x.getDate()).padStart(2, '0')}`;
+const tieWin = x => x.w === 0 ? x.a : x.w === 1 ? x.b : '';
+// Ties in bracket order, each side named; sides still to be decided name the ties that feed them
+function tieRounds(key){
+  const {order, ties} = TIES[key];
+  const by = r => ties.filter(x => x.r.toLowerCase() === r);
+  const qf = by('quarterfinals').sort((x, y) => order.indexOf(x.a) - order.indexOf(y.a)), sf = by('semifinals'), fi = by('final');
+  const from = f => !f ? {c:'', l:'TBD'} : tieWin(f) ? {c:tieWin(f), l:nation(tieWin(f))}
+    : f.a && f.b ? {c:'', l:`${nation(f.a)} or ${nation(f.b)}`} : {c:'', l:`${f.r.replace(/s$/, '')} winner`};
+  const side = (c, f) => c ? {c, l:nation(c)} : from(f);
+  return [
+    ...qf.map(x => ({...x, A:side(x.a), B:side(x.b)})),
+    ...sf.map((x, i) => ({...x, A:side(x.a, qf[2 * i]), B:side(x.b, qf[2 * i + 1])})),
+    ...fi.map(x => ({...x, A:side(x.a, sf[0]), B:side(x.b, sf[1])})),
+    ...ties.filter(x => ![...qf, ...sf, ...fi].includes(x)).map(x => ({...x, A:side(x.a), B:side(x.b)})),
+  ];
+}
+const tieLive = x => x.w < 0 && (x.sa !== null || x.rb.some(r => r.sc));
+const tieLine = x => {
+  if (x.w >= 0){
+    const [W, L] = x.w === 0 ? [x.A, x.B] : [x.B, x.A];
+    return `<li><span><span class="ex mono">${dayLabel(x.d)}</span> <b>${esc(W.l)}</b> <span class="ex">d.</span> ${esc(L.l)}</span><span class="mono ex">${Math.max(x.sa, x.sb)}–${Math.min(x.sa, x.sb)}</span></li>`;
+  }
+  const tag = tieLive(x) ? `<span class="st live">Live ${x.sa ?? 0}–${x.sb ?? 0}</span>` : `<span class="st up">${x.d === isoDay(TODAY) ? 'Today' : 'Not played'}</span>`;
+  return `<li><span><span class="ex mono">${dayLabel(x.d)}</span> ${esc(x.A.l)} <span class="ex">vs</span> ${esc(x.B.l)}</span>${tag}</li>`;
+};
+const rubberLine = (x, r, i) => {
+  const lbl = `<span class="ex">${r.a.length > 1 || r.b.length > 1 || i === 2 ? 'Doubles' : `Singles ${i + 1}`}:</span>`;
+  const ns = ps => ps.map(nameLink).join(' / ');
+  if (r.w >= 0){
+    const [wp, lp, wc] = r.w === 0 ? [r.a, r.b, x.A.c] : [r.b, r.a, x.B.c];
+    return `<li><span>${lbl} <b>${ns(wp)}</b> <span class="ex">(${esc(wc)}) d.</span> ${ns(lp)}</span><span class="mono ex">${esc(r.sc)}</span></li>`;
+  }
+  if (r.np) return `<li><span>${lbl} ${ns(r.a)} <span class="ex">vs</span> ${ns(r.b)}</span><span class="ex">Not needed</span></li>`;
+  if (r.a.length && r.b.length) return `<li><span>${lbl} ${ns(r.a)} <span class="ex">vs</span> ${ns(r.b)}</span>${r.sc ? `<span class="mono ex">${esc(r.sc)}</span>` : '<span class="st up">Not played</span>'}</li>`;
+  return `<li><span>${lbl} <span class="ex">Players named on the day</span></span></li>`;
+};
+// Where each team stands: champion, out (and where), or its next tie
+function teamStatus(key, c){
+  const ts = tieRounds(key).filter(x => x.A.c === c || x.B.c === c);
+  const lost = ts.find(x => x.w >= 0 && tieWin(x) !== c), next = ts.find(x => x.w < 0);
+  if (lost) return {out:true, txt:`Lost ${lost.r.replace(/s$/, '').toLowerCase()} to ${nation(tieWin(lost))}`};
+  if (next) return {out:false, txt:`${next.r}: ${dayLabel(next.d)}`};
+  return {out:false, txt:ts.some(x => x.r.toLowerCase() === 'final' && tieWin(x) === c) ? '🏆 Champion' : 'In'};
+}
+const teamsLeft = key => TIES[key].teams.filter(x => !teamStatus(key, x.c).out).length;
+function tiesSection(t, key){
+  const all = tieRounds(key), {teams, order} = TIES[key];
+  const rounds = [...new Set(all.map(x => x.r))];
+  const sorted = [...teams].sort((x, y) => order.indexOf(x.c) - order.indexOf(y.c));
+  return `<section class="tsec" id="ties">
+  <div class="sec-head"><div><p class="eyebrow">${teams.length} teams · ${teamsLeft(key)} still in</p><h2>Ties and schedule</h2></div></div>
+  <p class="ex">Every tie is played in one day: two singles rubbers, then doubles if it is 1–1. First to two rubbers goes through.</p>
+  ${rounds.map(r => `<h3 class="subh">${esc(r)}</h3>${all.filter(x => x.r === r).map(x => `<details class="round"${x.w < 0 && x.A.c && x.B.c || x.d === isoDay(TODAY) ? ' open' : ''}><summary>${esc(x.A.l)} <span class="ex">vs</span> ${esc(x.B.l)} <span class="ex">· ${dayLabel(x.d)}${x.w >= 0 ? ` · ${esc(nation(tieWin(x)))} won ${Math.max(x.sa, x.sb)}–${Math.min(x.sa, x.sb)}` : tieLive(x) ? ` · live ${x.sa ?? 0}–${x.sb ?? 0}` : ''}</span></summary><ul class="mlist">${x.A.c && x.B.c ? x.rb.map((rb, i) => rubberLine(x, rb, i)).join('') : '<li><span class="ex">Teams set once the earlier ties are played.</span></li>'}</ul></details>`).join('')}`).join('')}
+  <h3 class="subh">Teams</h3>
+  ${sorted.map(x => { const s = teamStatus(key, x.c); return `<details class="round"><summary>${x.seed ? `<span class="ex mono">${esc(x.seed)}</span> ` : ''}<b>${esc(nation(x.c))}</b> <span class="ex">· ${esc(s.txt)}${x.cap ? ` · captain ${esc(x.cap)}` : ''}</span></summary>
+  <ul class="mlist">${x.p.map(([n, sr, dr]) => `<li><span>${nameLink(n)}</span><span class="mono ex">${sr ? `singles No. ${sr}` : ''}${sr && dr ? ' · ' : ''}${dr ? `doubles No. ${dr}` : ''}</span></li>`).join('')}</ul></details>`; }).join('')}
+</section>`;
+}
+// The ties for a home-page card: the earliest round still being played, then when the later rounds are
+function tieCard(key){
+  const all = tieRounds(key), cur = all.find(x => x.w < 0);
+  if (!cur) return '';
+  const later = [...new Set(all.filter(x => x.r !== cur.r && all.indexOf(x) > all.indexOf(cur)).map(x => x.r))]
+    .map(r => { const ds = [...new Set(all.filter(x => x.r === r).map(x => x.d))].filter(Boolean).sort(); return `${r} ${ds.length > 1 ? `${fmt(ds[0])}–${d(ds.at(-1)).getDate()}` : ds.length ? fmt(ds[0]) : 'TBA'}`; });
+  return `<h5 class="subh">${esc(cur.r)}</h5><ul class="mlist">${all.filter(x => x.r === cur.r).sort((x, y) => x.d.localeCompare(y.d)).map(tieLine).join('')}</ul>${later.length ? `<span class="ex">Then: ${esc(later.join(' · '))}</span>` : ''}`;
+}
+
 const methodNote = () => `<div class="panel method" id="method">
   <h3>How the win probabilities work</h3>
   <p>Every completed match in the 2026 draws this site covers (${MATCHES.filter(counts).length.toLocaleString('en-US')} matches from ${Object.keys(DRAWS).length} Wikipedia draw pages, walkovers excluded) updates an Elo rating. Everyone starts at ${ELO0}; after each match the winner gains and the loser drops K × (1 − expected score), with K = 250 / (matches played + 5)<sup>0.4</sup>, so a player’s rating moves less as their record grows. A separate rating is kept for hard, clay and grass. For a match, each player’s overall and surface ratings are averaged, and the chance of winning is 1 / (1 + 10<sup>(opponent − player) / 400</sup>).</p>
@@ -310,7 +387,7 @@ function playerDetail(p){
 
 /* ---------- full pages ---------- */
 function tournamentBody(t){
-  const st = status(t), keys = drawKeys(t);
+  const st = status(t), keys = drawKeys(t), tk = tieKey(t);
   const res = t.res.length ? `<div class="panel tbox"><h2>Final${t.res.length > 1 ? 's' : ''}</h2><div class="res">${t.res.map(r => `<span class="tour">${r.t}</span><span>🏆 <b>${nameLink(r.w)}</b> <span class="ex">d.</span> ${nameLink(r.r)}</span><span class="score">${esc(r.sc)}</span>`).join('')}</div>
     ${t.note ? `<p class="ex">${esc(t.note)}</p>` : ''}
 </div>` : '';
@@ -333,12 +410,12 @@ function tournamentBody(t){
   return `<div class="page-head">
   <p class="eyebrow">${esc(t.city)}, ${esc(t.co)} · ${t.tour === 'BOTH' ? 'ATP &amp; WTA' : t.tour} ${LV[t.lv].n}</p>
   <h1>${esc(t.name)}</h1>
-  <div class="meta"><span class="st ${st}">${ST[st]}</span><span class="chip mono">${range(t)}, 2026${t.approx ? ' (tentative)' : ''}</span><span class="chip"><i class="dot ${t.sf}"></i>${SF[t.sf]}${t.indoor ? ' · indoor' : ''}</span>${keys.filter(k => !k.endsWith('/Team')).map(k => `<a class="chip" href="#${k.split('/')[1].toLowerCase()}">${TOURLABEL[k.split('/')[1]]} draw ↓</a>`).join('')}</div>
+  <div class="meta"><span class="st ${st}">${ST[st]}</span><span class="chip mono">${range(t)}, 2026${t.approx ? ' (tentative)' : ''}</span><span class="chip"><i class="dot ${t.sf}"></i>${SF[t.sf]}${t.indoor ? ' · indoor' : ''}</span>${keys.filter(k => !k.endsWith('/Team')).map(k => `<a class="chip" href="#${k.split('/')[1].toLowerCase()}">${TOURLABEL[k.split('/')[1]]} draw ↓</a>`).join('')}${tk ? '<a class="chip" href="#ties">Ties &amp; schedule ↓</a>' : ''}</div>
 </div>
-${res}${none}${draws}
+${res}${none}${tk ? tiesSection(t, tk) : ''}${draws}
 ${draws.includes('class="pred"') ? `<section>${methodNote()}</section>` : ''}
 <p class="tlinks"><a class="slamlink" href="${BASE}season.html#${t.id}">See it on the season map →</a>${t.lv === 'GS' ? ` <a class="slamlink" href="${BASE}archive.html#${t.id}">${esc(t.name)} champions since 2000 →</a>` : ''}</p>
-${srcLine(keys, resKeys(t))}`;
+${srcLine(keys, resKeys(t), tk || [])}`;
 }
 
 function playerBody(s){

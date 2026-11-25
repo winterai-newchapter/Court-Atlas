@@ -8,7 +8,7 @@ TODAY.setTime(Date.now());
 // Watch every in-progress draw (or only tournament `only`) and call onUpdate() after each poll that brought new results
 function liveWatch(onUpdate, only){
   const jobs = T.filter(t => (!only || t.id === only) && status(t) === 'live')
-    .flatMap(t => Object.entries(t.w || {}).filter(([tour]) => tour !== 'Team').map(([tour, title]) => ({key:`${t.id}/${tour}`, title})));
+    .flatMap(t => Object.entries(t.w || {}).filter(([tour]) => tour !== 'Team' || TIES[`${t.id}/Team`]).map(([tour, title]) => ({key:`${t.id}/${tour}`, title})));
   const stamp = document.getElementById('livestamp');
   if (!jobs.length){ if (stamp) stamp.hidden = true; return; }
   const show = (txt, err) => { if (stamp){ stamp.hidden = false; stamp.classList.toggle('err', !!err); stamp.innerHTML = `<span class="livedot" aria-hidden="true"></span>${txt}`; } };
@@ -30,6 +30,12 @@ function liveWatch(onUpdate, only){
         const rev = p.revisions[0], asked = alias[p.title] || p.title;
         for (const j of jobs.filter(x => x.title === asked)){
           if (SRC[j.key] && SRC[j.key].rev >= rev.revid) continue;
+          if (j.key.endsWith('/Team')){
+            TIES[j.key] = WIKIDRAW.parseTies(rev.slots.main.content);
+            SRC[j.key] = {u:WIKIDRAW.wiki(p.title), rev:rev.revid, at:rev.timestamp};
+            changed++;
+            continue;
+          }
           const parsed = WIKIDRAW.parseDraw(rev.slots.main.content);
           if (!parsed.matches.length) continue;
           DRAWS[j.key] = WIKIDRAW.toDraw(parsed, PEOPLE);

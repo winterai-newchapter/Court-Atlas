@@ -4,12 +4,12 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;800&family=Public+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap">
 <link rel="stylesheet" href="styles.css?v=93f0652b">
 <script src="map.js?v=25b1b19f"></script>
-<script src="data.js?v=6e4fe472"></script>
-<script src="draws.js?v=04c84583"></script>
+<script src="data.js?v=c3d328a5"></script>
+<script src="draws.js?v=302fe24e"></script>
 <script src="common.js?v=1c89bfc6"></script>
-<script src="views.js?v=08ab5e2d"></script>
-<script src="parse.js?v=1acef2ea"></script>
-<script src="live.js?v=2c4d1899"></script>
+<script src="views.js?v=22ada202"></script>
+<script src="parse.js?v=16d5fbad"></script>
+<script src="live.js?v=60dc9456"></script>
 <header class="top"><div class="wrap">
   <a class="brand" href="index.html"><b>Court Atlas</b><span>2026 season</span></a>
   <nav id="nav"><a href="season.html">Season Map</a><a href="history.html">History</a><a href="archive.html">Past Champions</a><a href="rackets.html">Rackets</a><a href="strings.html">Strings</a><a href="players.html">Players</a><a href="stats.html">Statistics</a></nav>
@@ -17,7 +17,7 @@
 <main class="wrap">
 <div class="hub-hero">
   <div class="hero" style="padding:0">
-    <p class="eyebrow">ATP &amp; WTA · draws updated <span id="asof">Nov 23, 4:28 PM ET</span></p>
+    <p class="eyebrow">ATP &amp; WTA · draws updated <span id="asof">Nov 24, 9:39 PM ET</span></p>
     <h1>The 2026 season, <em>on the map</em></h1>
     <p>Live draws, next matches and results for every covered ATP and WTA event, January to November.</p>
     <p><a class="slamlink" href="season.html">Open the season map →</a></p>
@@ -50,7 +50,7 @@
 
 <section>
   <div class="sec-head"><div><p class="eyebrow">Latest</p><h2>Recent and upcoming</h2></div></div>
-  <div class="recent" id="recent"><a href="tournament/par.html"><i class="dot hard"></i><span><span class="nm">Paris Masters</span><br><span class="sub">Nov 2–8 · Paris (Nanterre)</span></span><span class="st done">Completed</span></a><a href="tournament/sto.html"><i class="dot hard"></i><span><span class="nm">Stockholm Open</span><br><span class="sub">Nov 8–14 · Stockholm</span></span><span class="st done">Completed</span></a><a href="tournament/atpf.html"><i class="dot hard"></i><span><span class="nm">ATP Finals</span><br><span class="sub">Won by Carlos Alcaraz</span></span><span class="st done">Completed</span></a><a href="tournament/dc.html"><i class="dot hard"></i><span><span class="nm">Davis Cup Final 8</span><br><span class="sub">Nov 24–29 · Bologna</span></span><span class="st up">Upcoming</span></a></div>
+  <div class="recent" id="recent"><a href="tournament/par.html"><i class="dot hard"></i><span><span class="nm">Paris Masters</span><br><span class="sub">Nov 2–8 · Paris (Nanterre)</span></span><span class="st done">Completed</span></a><a href="tournament/sto.html"><i class="dot hard"></i><span><span class="nm">Stockholm Open</span><br><span class="sub">Nov 8–14 · Stockholm</span></span><span class="st done">Completed</span></a><a href="tournament/atpf.html"><i class="dot hard"></i><span><span class="nm">ATP Finals</span><br><span class="sub">Won by Carlos Alcaraz</span></span><span class="st done">Completed</span></a><a href="tournament/dc.html"><i class="dot hard"></i><span><span class="nm">Davis Cup Final 8</span><br><span class="sub">Nov 24–29 · Bologna</span></span><span class="st live">In progress</span></a></div>
 </section>
 
 <section style="padding-top:40px">
@@ -147,19 +147,20 @@ function renderNow(tour){
   const per = Math.ceil(3 / Math.max(1, list.length));
   $('#nowSub').textContent = `${list.length} tournament${list.length === 1 ? '' : 's'} in progress`;
   $('#nowGrid').innerHTML = list.length ? list.map(t => {
-    const keys = drawKeys(t).filter(k => !k.endsWith('/Team')), next = keys.flatMap(pending).filter(m => m.a && m.b);
+    const tk = tieKey(t), keys = drawKeys(t).filter(k => !k.endsWith('/Team')), next = keys.flatMap(pending).filter(m => m.a && m.b);
     // At least three matches on screen in total: split them across the live cards, topping up with the latest results
     const shown = next.slice(0, per), done = MATCHES.filter(m => keys.includes(m.key) && played(m)).slice(-(per - shown.length)).reverse();
-    const alive = keys.map(k => `${entrants(k).filter(e => !e.out).length} ${k.split('/')[1]}`).join(' · ');
+    const alive = tk ? `${teamsLeft(tk)} of ${TIES[tk].teams.length} teams` : keys.map(k => `${entrants(k).filter(e => !e.out).length} ${k.split('/')[1]}`).join(' · ');
     return `<article class="nowcard">
     <span class="eyebrow">${t.tour === 'BOTH' ? 'ATP & WTA' : t.tour} ${LV[t.lv].n} · ${t.city}, ${t.co}</span>
     <b><a href="${tHref(t)}">${t.name}</a></b>
-    <span class="meta"><i class="dot ${t.sf}"></i>${SF[t.sf]}${t.indoor ? ' · indoor' : ''} · <span class="mono">${range(t)}</span>${alive ? ` · ${alive} players left` : ''}</span>
+    <span class="meta"><i class="dot ${t.sf}"></i>${SF[t.sf]}${t.indoor ? ' · indoor' : ''} · <span class="mono">${range(t)}</span>${alive ? ` · ${alive}${tk ? ' still in' : ' players left'}` : ''}</span>
     <span class="left">${left(t) <= 0 ? 'Final today' : left(t) === 1 ? 'Final tomorrow' : `Final in ${left(t)} days`}</span>
     ${shown.length ? `<ul class="prows">${shown.map(predRow).join('')}</ul>${next.length > shown.length ? `<span class="ex">+${next.length - shown.length} more match${next.length - shown.length > 1 ? 'es' : ''} scheduled</span>` : ''}` : ''}
+    ${tk ? tieCard(tk) : ''}
     ${shown.length < per && done.length ? `<h5 class="subh">Latest results</h5><ul class="mlist">${done.map(m => matchLine(m)).join('')}</ul>` : ''}
-    <span class="go"><a href="${tHref(t)}">Draw, players &amp; predictions →</a> <a href="season.html#${t.id}">Map</a></span>
-    ${srcLine(keys)}
+    <span class="go"><a href="${tHref(t)}">${tk ? 'Ties, teams &amp; schedule →' : 'Draw, players &amp; predictions →'}</a> <a href="season.html#${t.id}">Map</a></span>
+    ${srcLine(keys, tk || [])}
   </article>`;
   }).join('') : `<p class="ex">No ${tour} tournaments are being played right now.</p>`;
 }

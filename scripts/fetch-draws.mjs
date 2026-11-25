@@ -8,7 +8,7 @@ const API = 'https://en.wikipedia.org/w/api.php';
 const { T, PLAYERS } = new Function(fs.readFileSync('src/data.js', 'utf8') + ';return {T, PLAYERS};')();
 
 // The parser is shared with the browser's live refresh (src/live.js)
-const { slug, parseDraw, toDraw, wiki } = new Function(fs.readFileSync('src/parse.js', 'utf8') + ';return WIKIDRAW;')();
+const { slug, parseDraw, toDraw, wiki, parseTies } = new Function(fs.readFileSync('src/parse.js', 'utf8') + ';return WIKIDRAW;')();
 export { slug };
 
 async function fetchPages(titles){
@@ -36,12 +36,16 @@ for (const t of T) for (const [tour, title] of Object.entries(t.w || {})) jobs.p
 const pages = await fetchPages([...new Set(jobs.map(j => j.title))]);
 const fetched = new Date().toISOString().replace(/\.\d+Z$/, 'Z');
 
-const SRC = {}, DRAWS = {}, PEOPLE = {};
+const SRC = {}, DRAWS = {}, PEOPLE = {}, TIES = {};
 for (const {t, tour, title} of jobs){
   const pg = pages[title], key = `${t.id}/${tour}`;
   if (!pg){ console.warn(`missing page: ${title}`); continue; }
   SRC[key] = {u: wiki(pg.title), rev: pg.rev, at: pg.at};
-  if (tour === 'Team') continue;
+  if (tour === 'Team'){
+    // Davis Cup Finals: ties and rubbers; other team events (United Cup) keep only the hand-entered final
+    if (pg.text.includes('Davis Cup Finals box')) TIES[key] = parseTies(pg.text);
+    continue;
+  }
   const parsed = parseDraw(pg.text), {matches} = parsed;
   if (!matches.length){ console.warn(`no draw yet: ${title}`); }
   DRAWS[key] = toDraw(parsed, PEOPLE);
@@ -65,6 +69,9 @@ const SRC = ${JSON.stringify(SRC)};
 const PEOPLE = ${JSON.stringify(PEOPLE)};
 /* rounds: labels; e: slug -> seed/entry tag; m: [round index, player A, player B, winner (0 A, 1 B, -1 not played), score] */
 const DRAWS = ${JSON.stringify(DRAWS)};
+/* Team events: order IOC codes in bracket order; teams [{c, seed, cap captain, p [name, singles rank, doubles rank]}];
+   ties [{r round, d date, a, b IOC codes, sa, sb tie score, w winner (0 a, 1 b, -1 open), rb rubbers [{a, b names, w, sc, np not played}]}] */
+const TIES = ${JSON.stringify(TIES)};
 `;
 fs.writeFileSync('src/draws.js', out);
 const n = Object.values(DRAWS).reduce((a, x) => a + x.m.length, 0);

@@ -158,5 +158,93 @@ const WIKIDRAW = (() => {
     const rounds = [...new Set(matches.map(m => m.round))];
     return {rounds, e: ent, m: matches.map(m => [rounds.indexOf(m.round), slug(m.a), slug(m.b), m.w, m.sc])};
   }
-  return {slug, parseDraw, toDraw, wiki};
+  // Davis Cup Finals page: {{Davis Cup Finals box}} ties (best-of-three rubbers, in {{TennisMatch3}}), the
+  // {{8TeamBracket-info}} seeds and the team nomination tables. Returns {teams, ties}; empty when the page has no boxes.
+  function templates(text, name){
+    const res = [];
+    let i = 0;
+    while ((i = text.indexOf('{{' + name, i)) >= 0){
+      let depth = 0, j = i;
+      for (; j < text.length; j++){
+        if (text.startsWith('{{', j)){ depth++; j++; }
+        else if (text.startsWith('}}', j)){ depth--; j++; if (!depth) break; }
+      }
+      res.push(text.slice(i, j + 1));
+      i = j + 1;
+    }
+    return res;
+  }
+  // Split a template body on its own pipes (not those inside nested [[...]] / {{...}}): positional and named parts in order
+  function parts(tpl){
+    const body = tpl.slice(2, -2), out = [];
+    let depth = 0, start = 0;
+    for (let i = 0; i < body.length; i++){
+      const two = body.slice(i, i + 2);
+      if (two === '{{' || two === '[['){ depth++; i++; }
+      else if (two === '}}' || two === ']]'){ depth--; i++; }
+      else if (body[i] === '|' && !depth){ out.push(body.slice(start, i)); start = i + 1; }
+    }
+    out.push(body.slice(start));
+    return out.slice(1).map(s => { const m = s.match(/^\s*([A-Za-z0-9_-]+)\s*=([\s\S]*)$/); return m ? [m[1], m[2].trim()] : [null, s.trim()]; });
+  }
+  const plain = v => v.replace(/\[\[(?:[^\]|]*\|)?([^\]]*)\]\]/g, '$1').replace(/<ref[\s\S]*?(<\/ref>|\/>)/g, '').replace(/'''?/g, '').replace(/&nbsp;/g, ' ').trim();
+  const ioc = v => (v.match(/\{\{\s*davis(?:-big)?\s*\|\s*([A-Z]{3})/) || [])[1] || '';
+  function rubber(tpl){
+    const r = {a: [], b: [], sa: [], sb: [], np: false};
+    let side = null;
+    for (const [k, v] of parts(tpl)){
+      if (k && /^T1P\d$/.test(k)){ side = 'a'; if (plain(v)) r.a.push(plain(v)); }
+      else if (k && /^T2P\d$/.test(k)){ side = 'b'; if (plain(v)) r.b.push(plain(v)); }
+      else if (k === 'np'){ r.np = true; }
+      else if (!k && side){ const s = setScore(v); if (s && s.g !== null) r['s' + side].push(s); }
+    }
+    let wa = 0, wb = 0;
+    for (let k = 0; k < Math.min(r.sa.length, r.sb.length); k++){ if (r.sa[k].g > r.sb[k].g) wa++; else if (r.sb[k].g > r.sa[k].g) wb++; }
+    const w = wa >= 2 ? 0 : wb >= 2 ? 1 : -1;
+    const sc = w < 0 ? scoreText(r.sa, r.sb) : w === 0 ? scoreText(r.sa, r.sb) : scoreText(r.sb, r.sa);
+    return {a: r.a, b: r.b, w, sc: r.np && w < 0 ? '' : sc, np: r.np && w < 0};
+  }
+  function parseTies(text){
+    const seeds = {}, order = [];
+    for (const tpl of templates(text, '8TeamBracket')){
+      const p = params(tpl);
+      for (let n = 1; p[`RD1-team${n}`] !== undefined; n++){ const c = ioc(p[`RD1-team${n}`]); if (c) order.push(c); if (c) seeds[c] = (p[`RD1-seed${n}`] || '').replace(/&nbsp;/g, '').trim(); }
+    }
+    const teams = [];
+    const nom = text.search(/^==\s*Team nominations/m), res = text.search(/^==\s*Results/m);
+    if (nom >= 0) for (const blk of text.slice(nom, res > nom ? res : undefined).split(/^!\s*colspan=3\s*\|/m).slice(1)){
+      const c = ioc(blk);
+      if (!c) continue;
+      const players = [];
+      for (const row of blk.split('\n').filter(l => /^\|\s*\{\{sort/.test(l))){
+        const head = row.match(/^\|\s*(\{\{sort[^}]*\}\})/)[1], cells = [head, ...row.slice(row.indexOf(head) + head.length).split('||').slice(1)].map(s => s.trim());
+        const nm = cells[0].match(/\{\{sortname\|([^|}]*)\|([^|}]*)/), alt = cells[0].match(/\{\{sort\|[^|}]*\|([^}]*)\}\}/);
+        const name = nm ? `${nm[1]} ${nm[2]}`.trim() : alt ? plain(alt[1]) : '';
+        const rk = s => { const m = (s || '').replace(/align=center\|/, '').match(/^\s*(\d+)\s*$/); return m ? +m[1] : null; };
+        if (name) players.push([name, rk(cells[1]), rk(cells[2])]);
+      }
+      const cap = blk.match(/'''Captain:'''\s*([^\n]*)/);
+      teams.push({c, seed: seeds[c] || '', cap: cap ? plain(cap[1]) : '', p: players});
+    }
+    for (const c of Object.keys(seeds)) if (!teams.find(t => t.c === c)) teams.push({c, seed: seeds[c], cap: '', p: []});
+    const ties = [];
+    const heads = [...text.matchAll(/^===\s*([^=]+?)\s*===\s*$/gm)].map(m => ({at: m.index, r: m[1]}));
+    for (const tpl of templates(text, 'Davis Cup Finals box')){
+      const at = text.indexOf(tpl), p = rrParams(tpl);
+      const r = (heads.filter(h => h.at < at).pop() || {r: ''}).r;
+      const dm = plain(p.date || '').match(/(\d{1,2})\s+(January|February|March|April|May|June|July|August|September|October|November|December)\s+(\d{4})/);
+      const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+      const date = dm ? `${dm[3]}-${String(MONTHS.indexOf(dm[2]) + 1).padStart(2, '0')}-${dm[1].padStart(2, '0')}` : '';
+      const n = v => /^\d+$/.test(plain(v || '')) ? +plain(v) : null;
+      const rb = ['R1', 'R2', 'R3', 'R4', 'R5'].filter(k => p[k]).map(k => rubber(p[k]));
+      const tie = {r, d: date, a: (p.team1 || '').trim(), b: (p.team2 || '').trim(), sa: n(p.score1), sb: n(p.score2), rb};
+      // Fill the tie score from the rubbers when the box has none yet
+      if (tie.sa === null && rb.some(x => x.w >= 0)){ tie.sa = rb.filter(x => x.w === 0).length; tie.sb = rb.filter(x => x.w === 1).length; }
+      tie.w = tie.sa >= 2 ? 0 : tie.sb >= 2 ? 1 : -1;
+      ties.push(tie);
+    }
+    return {order, teams, ties};
+  }
+
+  return {slug, parseDraw, toDraw, wiki, parseTies};
 })();
